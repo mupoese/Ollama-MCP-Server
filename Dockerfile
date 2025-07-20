@@ -1,5 +1,10 @@
 # Gebruik officiële Node.js 18 LTS als basis
 FROM node:18-alpine
+# v1.0.0
+LABEL maintainer="mupoese <info@mupoese.nl>" \
+      author="mupoese" \
+      version="1.0.0" \
+      description="Custom MCP server for Ollama (by mupoese)"
 
 # Maak een app directory in de container
 WORKDIR /app
