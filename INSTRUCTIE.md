@@ -133,5 +133,5 @@ Alle omgevingsvariabelen worden automatisch uit `.env` geladen.
 
 ## 10. Licentie & eigendom
 
-* **Licentie:** [LICENSE](https://github.com/mupoese/Ollama-MCP-Server/LICENSE.md)
+* **[Licentie](https://github.com/mupoese/Ollama-MCP-Server/blob/main/LICENSE):**
 * **Eigendom:** mupoese.nl, Den Haag, Nederland
