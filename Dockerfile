@@ -4,7 +4,8 @@ FROM node:18-alpine
 LABEL maintainer="mupoese <info@mupoese.nl>" \
       author="mupoese" \
       version="1.0.0" \
-      description="Custom MCP server for Ollama (by mupoese)"
+      description="Custom MCP server for Ollama (by mupoese)" \
+      license="GPL-2.0"
 
 WORKDIR /app
 
