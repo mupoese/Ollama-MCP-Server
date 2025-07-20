@@ -10,8 +10,8 @@
 
 ```bash
 # Pull and run from Docker Hub
-docker run -i --rm \
-  -e OLLAMA_API=http://host.docker.internal:11434 \
+docker run -i --rm --network host \
+  -e OLLAMA_API=http://localhost:11434 \
   docker.io/mup1987/ollama-mcp-server:latest
 ```
 
@@ -22,8 +22,8 @@ docker run -i --rm \
 git clone https://github.com/mupoese/Ollama-MCP-Server.git
 cd Ollama-MCP-Server
 docker build -t my-ollama-mcp-server .
-docker run -i --rm \
-  -e OLLAMA_API=http://host.docker.internal:11434 \
+docker run -i --rm --network host \
+  -e OLLAMA_API=http://localhost:11434 \
   my-ollama-mcp-server
 ```
 
@@ -135,12 +135,12 @@ docker build -t ollama-mcp-server .
 
 ```bash
 # Test with Docker (Linux/Mac)
-docker run -i --rm \
-  -e OLLAMA_API=http://host.docker.internal:11434 \
+docker run -i --rm --network host \
+  -e OLLAMA_API=http://localhost:11434 \
   ollama-mcp-server
 
 # Test with Docker (Windows PowerShell - single line)
-docker run -i --rm -e OLLAMA_API=http://host.docker.internal:11434 ollama-mcp-server
+docker run -i --rm --network host -e OLLAMA_API=http://localhost:11434 ollama-mcp-server
 ```
 
 ### 5. Publish to Docker Hub (Optional)
@@ -173,8 +173,8 @@ Add this to your Claude Desktop MCP configuration:
     "ollama": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm",
-        "-e", "OLLAMA_API=http://host.docker.internal:11434",
+        "run", "-i", "--rm", "--network", "host",
+        "-e", "OLLAMA_API=http://localhost:11434",
         "docker.io/mup1987/ollama-mcp-server:latest"
       ]
     }
@@ -189,8 +189,8 @@ Add this to your Claude Desktop MCP configuration:
     "ollama": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm",
-        "-e", "OLLAMA_API=http://host.docker.internal:11434",
+        "run", "-i", "--rm", "--network", "host",
+        "-e", "OLLAMA_API=http://localhost:11434",
         "ollama-mcp-server"
       ]
     }
@@ -204,7 +204,7 @@ Add this to your Claude Desktop MCP configuration:
   "mcpServers": {
     "ollama": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "OLLAMA_API=http://host.docker.internal:11434", "docker.io/mup1987/ollama-mcp-server:latest"]
+      "args": ["run", "-i", "--rm", "--network", "host", "-e", "OLLAMA_API=http://localhost:11434", "docker.io/mup1987/ollama-mcp-server:latest"]
     }
   }
 }
@@ -214,10 +214,9 @@ Add this to your Claude Desktop MCP configuration:
 
 | Platform        | OLLAMA_API Setting                       |
 | --------------- | ---------------------------------------- |
-| **Windows/Mac** | `http://host.docker.internal:11434`     |
-| **Linux**       | `http://172.17.0.1:11434` *(check IP)*  |
+| **All Platforms** | `http://localhost:11434`               |
 
-> **Linux users**: Check your Docker bridge IP with `ip addr show docker0` if the default doesn't work.
+> **Note**: Using localhost assumes Ollama is running on your host machine on port 11434.
 
 ---
 
