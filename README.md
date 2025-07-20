@@ -1,7 +1,9 @@
 # Ollama-MCP-Server
 
 **Auteur/beheerder:** [Mupoese](https://github.com/mupoese)
+
 **Versie:** v1.0.0  
+
 **Licentie:** GNU General Public License v2.0
 
 ---
