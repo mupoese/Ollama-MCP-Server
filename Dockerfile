@@ -1,30 +1,27 @@
-# Gebruik officiële Node.js 18 LTS als basis
 FROM node:18-alpine
+
 # v1.0.0
 LABEL maintainer="mupoese <info@mupoese.nl>" \
       author="mupoese" \
       version="1.0.0" \
       description="Custom MCP server for Ollama (by mupoese)"
 
-# Maak een app directory in de container
 WORKDIR /app
 
-# Kopieer package.json en package-lock.json eerst (voor betere caching)
-COPY package.json ./
-COPY package-lock.json ./
+# Copy package files
+COPY package*.json ./
 
-# Installeer alle dependencies
-RUN npm install --production
+# Install dependencies
+RUN npm ci --only=production
 
-# Kopieer de rest van de projectbestanden naar de container
-COPY . .
+# Copy server code
+COPY server.js ./
 
-# Zet standaard-omgevingsvariabelen (kun je overschrijven via .env)
-ENV PORT=3456
-ENV OLLAMA_API=http://host.docker.internal:11434
+# Make server executable
+RUN chmod +x server.js
 
-# Open poort 3456
-EXPOSE 3456
+# Use non-root user
+USER node
 
-# Start het Node.js MCP-serverproces
-CMD ["node", "src/server.js"]
+# Start the MCP server
+CMD ["node", "server.js"]
