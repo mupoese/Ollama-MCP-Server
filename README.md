@@ -4,6 +4,59 @@
 **Version:** v1.0.0  
 **License:** GNU General Public License v2.0
 
+## Docker Usage Options
+
+### Option 1: Use Pre-built Image (Recommended)
+
+```bash
+# Pull and run from Docker Hub
+docker run -i --rm \
+  -e OLLAMA_API=http://host.docker.internal:11434 \
+  docker.io/mup1987/ollama-mcp-server:latest
+```
+
+### Option 2: Build Your Own Image
+
+```bash
+# Clone, build, and run locally
+git clone https://github.com/mupoese/Ollama-MCP-Server.git
+cd Ollama-MCP-Server
+docker build -t my-ollama-mcp-server .
+docker run -i --rm \
+  -e OLLAMA_API=http://host.docker.internal:11434 \
+  my-ollama-mcp-server
+```
+
+### Option 3: Docker Compose (Production)
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+services:
+  ollama-mcp-server:
+    image: docker.io/mup1987/ollama-mcp-server:latest
+    environment:
+      - OLLAMA_API=http://host.docker.internal:11434
+    stdin_open: true
+    restart: unless-stopped
+    depends_on:
+      - ollama
+  
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+```
+
+Run with: `docker-compose up -d`
+
 ---
 
 ## Overview
@@ -81,10 +134,23 @@ docker build -t ollama-mcp-server .
 ### 4. Test the Server
 
 ```bash
-# Test with Docker
+# Test with Docker (Linux/Mac)
 docker run -i --rm \
   -e OLLAMA_API=http://host.docker.internal:11434 \
   ollama-mcp-server
+
+# Test with Docker (Windows PowerShell - single line)
+docker run -i --rm -e OLLAMA_API=http://host.docker.internal:11434 ollama-mcp-server
+```
+
+### 5. Publish to Docker Hub (Optional)
+
+```bash
+# Tag your image
+docker tag ollama-mcp-server docker.io/mup1987/ollama-mcp-server:latest
+
+# Push to Docker Hub
+docker push docker.io/mup1987/ollama-mcp-server:latest
 ```
 
 ---
@@ -100,6 +166,23 @@ docker run -i --rm \
 
 Add this to your Claude Desktop MCP configuration:
 
+**Using Pre-built Docker Image:**
+```json
+{
+  "mcpServers": {
+    "ollama": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "OLLAMA_API=http://host.docker.internal:11434",
+        "docker.io/mup1987/ollama-mcp-server:latest"
+      ]
+    }
+  }
+}
+```
+
+**Using Local Docker Build:**
 ```json
 {
   "mcpServers": {
@@ -110,6 +193,18 @@ Add this to your Claude Desktop MCP configuration:
         "-e", "OLLAMA_API=http://host.docker.internal:11434",
         "ollama-mcp-server"
       ]
+    }
+  }
+}
+```
+
+**Windows PowerShell Users:** Use this single-line format:
+```json
+{
+  "mcpServers": {
+    "ollama": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "OLLAMA_API=http://host.docker.internal:11434", "docker.io/mup1987/ollama-mcp-server:latest"]
     }
   }
 }
