@@ -1,15 +1,15 @@
 # Ollama-MCP-Server
 
-**Auteur/beheerder:** [Mupoese](https://github.com/mupoese)  
-**Versie:** v1.0.0  
-**Licentie:** GNU General Public License v2.0
+**Author/Maintainer:** [Mupoese](https://github.com/mupoese)  
+**Version:** v1.0.0  
+**License:** GNU General Public License v2.0
 
 ---
 
-## Overzicht
+## Overview
 
-**Ollama-MCP-Server** is een eigen, uitbreidbare MCP (Model Context Protocol) server die een brug vormt tussen lokale of remote Ollama LLM-modellen en elke MCP-compatibele applicatie, zoals Claude Desktop.  
-Dit project biedt maximale flexibiliteit, privacy, open source gebruik en professionele integratie.
+**Ollama-MCP-Server** is a custom, extensible MCP (Model Context Protocol) server that bridges local or remote Ollama LLM models with any MCP-compatible application, such as Claude Desktop.  
+This project offers maximum flexibility, privacy, open source usage, and professional integration.
 
 ---
 
@@ -17,148 +17,151 @@ Dit project biedt maximale flexibiliteit, privacy, open source gebruik en profes
 
 ### v1.0.0
 
-- Eerste stabiele release.
-- Volledige ondersteuning voor MCP-API endpoints.
-- Docker-support voor Windows, Mac en Linux.
-- Integratie-instructies voor Claude Desktop.
-- Healthcheck endpoint.
-- Volledige foutafhandeling en logging.
+- First stable release
+- Full MCP protocol support with JSON-RPC over stdin/stdout
+- Docker support for Windows, Mac, and Linux
+- Integration instructions for Claude Desktop
+- Complete error handling and logging
+- Proper MCP SDK implementation
 
 ---
 
-## Belangrijkste features
+## Key Features
 
-- Proxy tussen MCP-clients en Ollama.
-- Endpoints: modellen-lijst, chat, model-details, model-pull.
-- Docker-support: direct uitrolbaar als container.
-- Omgevingsvariabelen via Docker `-e` of lokaal via `.env`.
-- Volledige integratie met Claude Desktop (zie voorbeeld).
-- Uitbreidbaar met eigen authenticatie, logging, dashboards, enz.
-- Snel te bouwen en te deployen.
+- **Proper MCP Protocol**: Implements JSON-RPC over stdin/stdout (not HTTP REST)
+- **MCP Tools**: List models, chat, generate text, pull models
+- **Docker Support**: Ready-to-deploy container
+- **Environment Variables**: Configure via Docker `-e` or local `.env`
+- **Claude Desktop Integration**: Works seamlessly with Claude Desktop
+- **Extensible**: Add custom authentication, logging, dashboards, etc.
+- **Fast Deployment**: Quick to build and deploy
 
 ---
 
-## Systeemeisen
+## System Requirements
 
-- Node.js v18+ (voor lokaal testen)
-- npm (voor lokaal testen)
-- Ollama lokaal geïnstalleerd en draaiend, of remote Ollama API
-- Docker (aanbevolen voor productie/desktop-integratie)
+- Node.js v18+ (for local testing)
+- npm (for local testing)
+- Ollama installed and running locally, or remote Ollama API
+- Docker (recommended for production/desktop integration)
 - Git
 
 ---
 
-## Gebruik: lokaal vs. Docker
+## Important: MCP vs HTTP
 
-| Gebruik             | OLLAMA_API instellen                    | Start MCP-server                                                     | Toegankelijke URL         |
-|---------------------|-----------------------------------------|---------------------------------------------------------------------|---------------------------|
-| **Lokaal**          | `http://localhost:11434`                | `PORT=3456 OLLAMA_API=http://localhost:11434 npm start`             | `http://localhost:3456`   |
-| **Docker (Win/Mac)**| `http://host.docker.internal:11434`     | Zie Docker-voorbeeld hieronder                                      | `http://localhost:3456`   |
-| **Docker (Linux)**  | `http://172.17.0.1:11434` *(check IP)*  | Zie Docker-voorbeeld hieronder                                      | `http://localhost:3456`   |
+This server implements the **Model Context Protocol (MCP)**, which uses JSON-RPC over stdin/stdout, **not HTTP REST API**. 
 
----
-
-## Standaard Docker-conventie: docker.io tag
-
-`docker.io/mup1987/ollama-mcp-server:latest` is **identiek** aan `mup1987/ollama-mcp-server:latest` (Docker Hub gebruikt automatisch `docker.io` als je geen registry opgeeft).
-
-Je mag dus altijd beide gebruiken. Voor CI/CD of duidelijkheid is een volledig pad soms gewenst.
+- ✅ **Correct**: MCP server for Claude Desktop integration
+- ❌ **Incorrect**: HTTP REST API server
 
 ---
 
-## Voorbeeld: Volledig Docker gebruik
+## Installation & Usage
 
-**Run:**
+### 1. Clone the Repository
 
 ```bash
-docker run --rm -p 3456:3456 \
-  -e PORT=3456 \
+git clone https://github.com/mupoese/Ollama-MCP-Server.git
+cd Ollama-MCP-Server
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Build Docker Image
+
+```bash
+docker build -t ollama-mcp-server .
+```
+
+### 4. Test the Server
+
+```bash
+# Test with Docker
+docker run -i --rm \
   -e OLLAMA_API=http://host.docker.internal:11434 \
-  docker.io/mup1987/ollama-mcp-server:latest
+  ollama-mcp-server
 ```
 
 ---
 
-## Gebruik met Docker
+## Claude Desktop Integration
 
-### **Windows / PowerShell**
+### Configuration File Location
 
-Gebruik **alles op één regel** (géén backslashes of linebreaks):
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-```powershell
-docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 docker.io/mup1987/ollama-mcp-server:latest
-```
+### MCP Configuration
 
-> **Let op:** Powershell ondersteunt geen Unix-linebreak (`\`).
-> Elk `-e` argument direct achter elkaar op dezelfde regel plaatsen.
-
-**Alternatief (voor gevorderden, Powershell):**
-
-```powershell
-$env:PORT=3456
-$env:OLLAMA_API="http://host.docker.internal:11434"
-docker run --rm -p 3456:3456 docker.io/mup1987/ollama-mcp-server:latest
-```
-
----
-
-### **Linux/macOS (bash shell)**
-
-Hier kun je wél met backslashes multi-line werken:
-
-```bash
-docker run --rm -p 3456:3456 \
-  -e PORT=3456 \
-  -e OLLAMA_API=http://172.17.0.1:11434 \
-  docker.io/mup1987/ollama-mcp-server:latest
-```
-
-> **Let op:** Controleer op Linux je bridge IP met
-> `ip addr show docker0` als het standaard IP niet werkt.
-
----
-
-### Veelgemaakte fouten op Windows
-
-* **Geen** backslash (`\`) of aparte regels gebruiken
-* Alles op **één regel**
-* Typ het commando exact zoals hierboven
-
----
-
-### Samenvatting per platform
-
-| Platform        | Aanbevolen commando                                                                                                                    |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Windows/PS**  | `docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 docker.io/mup1987/ollama-mcp-server:latest` |
-| **Linux/macOS** | Zie bovenstaande Bash-voorbeeld                                                                                                        |
-
----
-
-### **Let op voor productiegebruik**
-
-* Zet poort 3456 alleen open naar vertrouwde IP’s.
-* Gebruik een Docker restart policy, bijv. `--restart unless-stopped`
-* Monitoring en logging kun je uitbreiden met eigen middleware of tools.
-
----
-
-## Claude Desktop MCP-config voorbeeld
+Add this to your Claude Desktop MCP configuration:
 
 ```json
 {
   "mcpServers": {
-    "ollama-mcp": {
+    "ollama": {
       "command": "docker",
       "args": [
-        "run",
-        "--rm",
-        "-p",
-        "3456:3456",
-        "-e", "PORT=3456",
+        "run", "-i", "--rm",
         "-e", "OLLAMA_API=http://host.docker.internal:11434",
-        "docker.io/mup1987/ollama-mcp-server:latest"
+        "ollama-mcp-server"
       ]
+    }
+  }
+}
+```
+
+### Platform-Specific OLLAMA_API Settings
+
+| Platform        | OLLAMA_API Setting                       |
+| --------------- | ---------------------------------------- |
+| **Windows/Mac** | `http://host.docker.internal:11434`     |
+| **Linux**       | `http://172.17.0.1:11434` *(check IP)*  |
+
+> **Linux users**: Check your Docker bridge IP with `ip addr show docker0` if the default doesn't work.
+
+---
+
+## Available MCP Tools
+
+Once connected to Claude Desktop, these tools become available:
+
+| Tool Name           | Description                              |
+| ------------------- | ---------------------------------------- |
+| `ollama_list_models`| List all available Ollama models        |
+| `ollama_chat`       | Chat with an Ollama model               |
+| `ollama_generate`   | Generate text with an Ollama model      |
+| `ollama_pull_model` | Pull/download a model from registry     |
+
+---
+
+## Local Development (No Docker)
+
+For local development without Docker:
+
+```bash
+# Install dependencies
+npm install
+
+# Start the MCP server
+node server.js
+```
+
+**Claude Desktop config for local usage:**
+
+```json
+{
+  "mcpServers": {
+    "ollama": {
+      "command": "node",
+      "args": ["/path/to/your/ollama-mcp-server/server.js"],
+      "env": {
+        "OLLAMA_API": "http://localhost:11434"
+      }
     }
   }
 }
@@ -166,152 +169,97 @@ docker run --rm -p 3456:3456 \
 
 ---
 
-**TL;DR:**
-
-* Je mag `docker.io/` expliciet schrijven, maar het is optioneel zolang je op Docker Hub publiceert.
-* Beide werken prima voor build, run, push, pull én Claude Desktop config.
-
----
-
-## Installatie & gebruik (lokaal)
-
-1. **Clone de repo**
-
-   ```bash
-   git clone https://github.com/mupoese/Ollama-MCP-Server.git
-   cd Ollama-MCP-Server
-   ```
-
-2. **Installeer dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Start de server (voor lokale Ollama)**
-
-   ```bash
-   PORT=3456 OLLAMA_API=http://localhost:11434 npm start
-   ```
-
-   > Pas eventueel `OLLAMA_API` aan indien je Ollama op een ander IP draait.
-
-4. **De server draait nu op:**
-   [http://localhost:3456](http://localhost:3456)
-
----
-
-## Integratie met Claude Desktop
-
-1. Open Claude Desktop instellingen/configuratie.
-
-2. Voeg deze regel toe aan je MCP server-config:
-
-   ```json
-   {
-     "mcpServers": {
-       "ollama-mcp": {
-         "command": "docker",
-         "args": [
-           "run",
-           "--rm",
-           "-p", "3456:3456",
-           "-e", "PORT=3456",
-           "-e", "OLLAMA_API=http://host.docker.internal:11434",
-           "docker.io/mup1987/ollama-mcp-server:latest"
-         ]
-       }
-     }
-   }
-   ```
-
-   *(Linux-gebruikers: pas `"OLLAMA_API=http://host.docker.internal:11434"` aan naar je host-bridge-IP.)*
-
-3. Herstart Claude Desktop of voeg via het developer menu de nieuwe MCP-server toe.
-
-**Je kunt nu in Claude Desktop je eigen lokale Ollama-modellen gebruiken!**
-
----
-
-## API Endpoints
-
-| Methode | Endpoint        | Functie                         |
-| ------- | --------------- | ------------------------------- |
-| GET     | `/models`       | Lijst alle beschikbare modellen |
-| POST    | `/models/pull`  | Download een nieuw model        |
-| GET     | `/models/:name` | Details van een specifiek model |
-| POST    | `/chat`         | Chat met gekozen model          |
-| GET     | `/health`       | Healthcheck endpoint            |
-
----
-
-## Production deployment
-
-* Deploy als Docker-container met je gewenste omgevingsvariabelen.
-* Zet poort 3456 alleen open naar vertrouwde IP’s.
-* Gebruik een Docker restart policy, bijvoorbeeld:
-  `--restart unless-stopped`
-* Monitoring en logging kun je uitbreiden met eigen middleware of tools.
-
----
-
-## Projectstructuur
+## Project Structure
 
 ```
 Ollama-MCP-Server/
-├─ src/
-│   └─ server.js
-├─ package.json
-├─ package-lock.json
-├─ Dockerfile
-├─ README.md
-├─ .env.example
+├── server.js              # Main MCP server implementation
+├── package.json            # Dependencies and project info
+├── Dockerfile              # Docker build instructions
+├── LICENSE                 # GPL v2.0 license
+├── README.md              # This file
+└── .env.example           # Environment variables example
 ```
 
 ---
 
-## Licentie
+## Troubleshooting
 
-Dit project valt onder de GNU General Public License v2.0.
-Zie LICENSE.md of gpl-2.0.txt voor de volledige tekst.
+### Common Issues
+
+**Q: MCP server times out during initialization**  
+**A:** Ensure the server implements proper MCP protocol (JSON-RPC over stdin/stdout), not HTTP REST. Check that Ollama is running on the specified API endpoint.
+
+**Q: "Unexpected token" JSON parsing error**  
+**A:** The server is sending non-JSON output to stdout. All logging must go to stderr, not stdout.
+
+**Q: Docker container can't connect to Ollama**  
+**A:** Check your `OLLAMA_API` setting. Use `host.docker.internal` for Windows/Mac, or find your Docker bridge IP on Linux.
+
+**Q: Claude Desktop doesn't show the MCP server**  
+**A:** Verify your `claude_desktop_config.json` syntax and restart Claude Desktop. Check the MCP server logs for errors.
+
+### Debug Steps
+
+1. **Test Ollama directly:**
+   ```bash
+   curl http://localhost:11434/api/tags
+   ```
+
+2. **Check Docker connectivity:**
+   ```bash
+   docker run --rm alpine ping host.docker.internal
+   ```
+
+3. **View MCP server logs:**
+   Check Claude Desktop developer tools or console for MCP connection logs.
 
 ---
 
-## Onderhoud & Support
+## Contributing
 
-* **Auteur/beheerder:** Mupoese
-* **Issues/bugs:** via GitHub Issues
-* **Feature requests:** via Pull Request of GitHub Issue
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the GNU General Public License v2.0.  
+See `LICENSE` file for the complete license text.
+
+---
+
+## Support & Maintenance
+
+- **Author/Maintainer:** Mupoese
+- **Issues/Bugs:** via GitHub Issues
+- **Feature Requests:** via Pull Request or GitHub Issue
+- **Email:** info@mupoese.nl
 
 ---
 
 ## Buy Me a Coffee ☕
 
-Vind je dit project handig of wil je de ontwikkeling steunen?
-Vergeet niet om mij een coffee te kopen!
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square\&logo=buy-me-a-coffee\&logoColor=black)](https://buymeacoffee.com/mup1987)
+Find this project useful? Want to support development?  
+Don't forget to buy me a coffee!
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mup1987)
 
 ➡️ **[https://buymeacoffee.com/mup1987](https://buymeacoffee.com/mup1987)**
 
 ---
 
-## FAQ / Troubleshooting
+## Additional Resources
 
-* **Q:** Mijn Docker MCP-server krijgt geen verbinding met Ollama.
-  **A:** Controleer of je OLLAMA\_API juist is ingesteld. Gebruik `host.docker.internal` voor Windows/Mac, op Linux vaak `172.17.0.1`. Controleer of Ollama draait op poort 11434.
-
-* **Q:** Poort 3456 is al bezet.
-  **A:** Kies een andere poort in je MCP-server en pas dit aan in Docker/Claude Desktop config.
-
-* **Q:** Claude Desktop geeft geen modellen weer.
-  **A:** Controleer de verbinding met Ollama, check de logs van de MCP-server (`docker logs <container_id>`), en probeer het `/health`-endpoint in de browser.
-
-* **Q:** Hoe voeg ik nieuwe functionaliteit toe?
-  **A:** Fork de repo, werk in een nieuwe branch en open een Pull Request met duidelijke uitleg.
+- [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
+- [Ollama Documentation](https://ollama.ai/docs)
+- [Claude Desktop MCP Setup Guide](https://claude.ai/docs/mcp)
 
 ---
 
-> **Let op:**
-> Deze README is een levend document en wordt bij elke belangrijke update uitgebreid.
-
-```
+> **Note:**  
+> This README is a living document and will be expanded with each major update.
