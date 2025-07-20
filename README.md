@@ -72,20 +72,24 @@ This project offers maximum flexibility, privacy, open source usage, and profess
 
 - First stable release
 - Full MCP protocol support with JSON-RPC over stdin/stdout
+- **ES Modules**: Converted from CommonJS to ES modules for MCP SDK compatibility
 - Docker support for Windows, Mac, and Linux
 - Integration instructions for Claude Desktop
 - Complete error handling and logging
-- Proper MCP SDK implementation
+- **SILENCE_STARTUP support**: Prevents stdout pollution that breaks MCP protocol
+- Proper MCP SDK implementation with `@modelcontextprotocol/sdk`
 
 ---
 
 ## Key Features
 
 - **Proper MCP Protocol**: Implements JSON-RPC over stdin/stdout (not HTTP REST)
+- **ES Modules**: Uses modern ES module syntax for MCP SDK compatibility
 - **MCP Tools**: List models, chat, generate text, pull models
 - **Docker Support**: Ready-to-deploy container
 - **Environment Variables**: Configure via Docker `-e` or local `.env`
 - **Claude Desktop Integration**: Works seamlessly with Claude Desktop
+- **SILENCE_STARTUP**: Prevents console output that interferes with MCP protocol
 - **Extensible**: Add custom authentication, logging, dashboards, etc.
 - **Fast Deployment**: Quick to build and deploy
 
@@ -135,12 +139,13 @@ docker build -t ollama-mcp-server .
 
 ```bash
 # Test with Docker (Linux/Mac)
-docker run -i --rm --network host \
-  -e OLLAMA_API=http://localhost:11434 \
+docker run -i --rm \
+  -e OLLAMA_API=http://host.docker.internal:11434 \
+  -e SILENCE_STARTUP=true \
   ollama-mcp-server
 
 # Test with Docker (Windows PowerShell - single line)
-docker run -i --rm --network host -e OLLAMA_API=http://localhost:11434 ollama-mcp-server
+docker run -i --rm -e OLLAMA_API=http://host.docker.internal:11434 -e SILENCE_STARTUP=true ollama-mcp-server
 ```
 
 ### 5. Publish to Docker Hub (Optional)
@@ -166,17 +171,65 @@ docker push docker.io/mup1987/ollama-mcp-server:latest
 
 Add this to your Claude Desktop MCP configuration:
 
-**Using Pre-built Docker Image:**
+**Complete Configuration (with GitHub MCP Server):**
 ```json
 {
   "mcpServers": {
-    "ollama": {
+    "github": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm", "--network", "host",
-        "-e", "OLLAMA_API=http://localhost:11434",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_github_token_here"
+      }
+    },
+    "ollama-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "OLLAMA_API=http://host.docker.internal:11434",
+        "-e",
+        "SILENCE_STARTUP=true",
         "docker.io/mup1987/ollama-mcp-server:latest"
-      ]
+      ],
+      "env": {
+        "OLLAMA_API": "http://host.docker.internal:11434",
+        "SILENCE_STARTUP": "true"
+      }
+    }
+  }
+}
+```
+
+**Ollama-Only Configuration:**
+```json
+{
+  "mcpServers": {
+    "ollama-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "OLLAMA_API=http://host.docker.internal:11434",
+        "-e",
+        "SILENCE_STARTUP=true",
+        "docker.io/mup1987/ollama-mcp-server:latest"
+      ],
+      "env": {
+        "OLLAMA_API": "http://host.docker.internal:11434",
+        "SILENCE_STARTUP": "true"
+      }
     }
   }
 }
@@ -186,25 +239,22 @@ Add this to your Claude Desktop MCP configuration:
 ```json
 {
   "mcpServers": {
-    "ollama": {
+    "ollama-mcp": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm", "--network", "host",
-        "-e", "OLLAMA_API=http://localhost:11434",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "OLLAMA_API=http://host.docker.internal:11434",
+        "-e",
+        "SILENCE_STARTUP=true",
         "ollama-mcp-server"
-      ]
-    }
-  }
-}
-```
-
-**Windows PowerShell Users:** Use this single-line format:
-```json
-{
-  "mcpServers": {
-    "ollama": {
-      "command": "docker",
-      "args": ["run", "-i", "--rm", "--network", "host", "-e", "OLLAMA_API=http://localhost:11434", "docker.io/mup1987/ollama-mcp-server:latest"]
+      ],
+      "env": {
+        "OLLAMA_API": "http://host.docker.internal:11434",
+        "SILENCE_STARTUP": "true"
+      }
     }
   }
 }
@@ -214,9 +264,10 @@ Add this to your Claude Desktop MCP configuration:
 
 | Platform        | OLLAMA_API Setting                       |
 | --------------- | ---------------------------------------- |
-| **All Platforms** | `http://localhost:11434`               |
+| **Windows/Mac** | `http://host.docker.internal:11434`     |
+| **Linux**       | `http://localhost:11434` or `http://172.17.0.1:11434` |
 
-> **Note**: Using localhost assumes Ollama is running on your host machine on port 11434.
+> **Note**: Your configuration uses `host.docker.internal` which works well for Windows/Mac. Linux users may need to adjust to their Docker bridge IP.
 
 ---
 
@@ -267,12 +318,13 @@ node server.js
 
 ```
 Ollama-MCP-Server/
-├── server.js              # Main MCP server implementation
-├── package.json            # Dependencies and project info
+├── server.js              # Main MCP server implementation (ES modules)
+├── package.json            # Dependencies and project info (with "type": "module")
 ├── Dockerfile              # Docker build instructions
+├── docker-compose.yml      # Docker Compose configuration
+├── .env.example           # Environment variables example
 ├── LICENSE                 # GPL v2.0 license
-├── README.md              # This file
-└── .env.example           # Environment variables example
+└── README.md              # This file
 ```
 
 ---
@@ -285,13 +337,19 @@ Ollama-MCP-Server/
 **A:** Ensure the server implements proper MCP protocol (JSON-RPC over stdin/stdout), not HTTP REST. Check that Ollama is running on the specified API endpoint.
 
 **Q: "Unexpected token" JSON parsing error**  
-**A:** The server is sending non-JSON output to stdout. All logging must go to stderr, not stdout.
+**A:** The server is sending non-JSON output to stdout. All logging must go to stderr, not stdout. Set `SILENCE_STARTUP=true` to prevent this issue.
+
+**Q: "ERR_REQUIRE_ESM" error**  
+**A:** The MCP SDK requires ES modules. Make sure your package.json includes `"type": "module"` and uses `import` statements instead of `require()`.
 
 **Q: Docker container can't connect to Ollama**  
 **A:** Check your `OLLAMA_API` setting. Use `host.docker.internal` for Windows/Mac, or find your Docker bridge IP on Linux.
 
 **Q: Claude Desktop doesn't show the MCP server**  
 **A:** Verify your `claude_desktop_config.json` syntax and restart Claude Desktop. Check the MCP server logs for errors.
+
+**Q: Server works locally but fails in Docker**  
+**A:** Ensure you're using the correct Docker image (rebuilt after ES module changes) and proper environment variables.
 
 ### Debug Steps
 
@@ -305,8 +363,22 @@ Ollama-MCP-Server/
    docker run --rm alpine ping host.docker.internal
    ```
 
-3. **View MCP server logs:**
+3. **Test MCP server locally:**
+   ```bash
+   # Clone and test locally first
+   git clone https://github.com/mupoese/Ollama-MCP-Server.git
+   cd Ollama-MCP-Server
+   npm install
+   node server.js
+   ```
+
+4. **View MCP server logs:**
    Check Claude Desktop developer tools or console for MCP connection logs.
+
+5. **Rebuild Docker image after changes:**
+   ```bash
+   docker build -t docker.io/mup1987/ollama-mcp-server:latest .
+   ```
 
 ---
 
