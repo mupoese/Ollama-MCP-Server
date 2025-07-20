@@ -228,7 +228,7 @@ Zie LICENSE.md of gpl-2.0.txt voor de volledige tekst.
 
 ## Onderhoud & Support
 
-* **Auteur/beheerder:** Mupoese
+* **Auteur/beheerder:** mupoese
 * **Issues/bugs:** via GitHub Issues
 * **Feature requests:** via Pull Request of GitHub Issue
 
@@ -247,10 +247,18 @@ Zie LICENSE.md of gpl-2.0.txt voor de volledige tekst.
 
 * **Q:** Hoe voeg ik nieuwe functionaliteit toe?
   **A:** Fork de repo, werk in een nieuwe branch en open een Pull Request met duidelijke uitleg.
+  
+---
+  
+## Buy Me a Coffee ☕
+
+Vind je dit project handig of wil je de ontwikkeling steunen?  
+Vergeet niet om voor mij een coffee te kopen!  
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mup1987)
+
+➡️ **[https://buymeacoffee.com/mup1987](https://buymeacoffee.com/mup1987)**
 
 ---
 
 > **Let op:**
 > Deze README is een levend document en wordt bij elke belangrijke update uitgebreid.
-
-```
