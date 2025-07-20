@@ -1,4 +1,4 @@
-# Ollama-MCP-Server
+# Ollama-MCP-Server v.1
 
 **Auteur/beheerder:** [Mupoese](https://github.com/mupoese)  
 **Licentie:** GNU General Public License v2.0
@@ -14,12 +14,12 @@ Dit project is gericht op maximale flexibiliteit, privacy, open source gebruik e
 
 ## Belangrijkste features
 
-- **Proxy tussen MCP-clients en Ollama**  
-- **Endpoints:** modellen-lijst, chat, model-details, model-pull  
-- **Docker-support:** direct uitrolbaar als container  
-- **Omgevingsvariabelen via Docker `-e`** (geen .env nodig)  
-- **Volledige integratie met Claude Desktop (zie voorbeeld)**  
-- **Makkelijk uitbreidbaar met eigen authenticatie, logging, dashboards enz.**  
+- **Proxy tussen MCP-clients en Ollama**
+- **Endpoints:** modellen-lijst, chat, model-details, model-pull
+- **Docker-support:** direct uitrolbaar als container
+- **Omgevingsvariabelen via Docker `-e` of lokaal via `.env`**
+- **Volledige integratie met Claude Desktop (zie voorbeeld)**
+- **Makkelijk uitbreidbaar met eigen authenticatie, logging, dashboards enz.**
 - **Snel te bouwen en te deployen**
 
 ---
@@ -34,7 +34,17 @@ Dit project is gericht op maximale flexibiliteit, privacy, open source gebruik e
 
 ---
 
-## Installatie (development/lokaal testen)
+## Gebruik: lokaal vs. Docker
+
+| Gebruik          | OLLAMA_API instellen                           | Start MCP-server                         | Toegankelijke URL             |
+|------------------|------------------------------------------------|------------------------------------------|-------------------------------|
+| **Lokaal**       | `http://localhost:11434`                       | `PORT=3456 OLLAMA_API=http://localhost:11434 npm start` | `http://localhost:3456`       |
+| **Docker (Win/Mac)** | `http://host.docker.internal:11434`             | Zie Docker-voorbeeld hieronder           | `http://localhost:3456`       |
+| **Docker (Linux)**   | `http://172.17.0.1:11434` (vaak, check je IP)   | Zie Docker-voorbeeld hieronder           | `http://localhost:3456`       |
+
+---
+
+## Installatie & gebruik (lokaal)
 
 1. **Clone de repo**
     ```bash
@@ -47,11 +57,11 @@ Dit project is gericht op maximale flexibiliteit, privacy, open source gebruik e
     npm install
     ```
 
-3. **Start de server**
+3. **Start de server (voor lokale Ollama)**
     ```bash
-    PORT=3456 OLLAMA_API=http://host.docker.internal:11434 npm start
+    PORT=3456 OLLAMA_API=http://localhost:11434 npm start
     ```
-    > Pas eventueel de OLLAMA_API aan indien je Ollama op een ander IP draait.
+    > Pas eventueel OLLAMA_API aan indien je Ollama op een ander IP draait.
 
 4. **De server draait nu op**  
    [http://localhost:3456](http://localhost:3456)
@@ -60,8 +70,7 @@ Dit project is gericht op maximale flexibiliteit, privacy, open source gebruik e
 
 ## Gebruik met Docker
 
-**Docker-image bouwen en starten (zonder .env):**
-
+### **Windows/Mac:**
 ```bash
 docker build -t mupoese/ollama-mcp-server:latest .
 docker run --rm -p 3456:3456 \
@@ -70,9 +79,17 @@ docker run --rm -p 3456:3456 \
   mupoese/ollama-mcp-server:latest
 ````
 
-* Je MCP server is nu bereikbaar op poort **3456**.
-* Vervang het OLLAMA\_API-adres als je Ollama niet lokaal op de host draait.
-* Voor Linux-hosts kan het `OLLAMA_API=http://172.17.0.1:11434` zijn.
+### **Linux:**
+
+```bash
+docker build -t mupoese/ollama-mcp-server:latest .
+docker run --rm -p 3456:3456 \
+  -e PORT=3456 \
+  -e OLLAMA_API=http://172.17.0.1:11434 \
+  mupoese/ollama-mcp-server:latest
+```
+
+> **Let op:** Controleer je bridge IP op Linux met `ip addr show docker0` indien standaard IP niet werkt.
 
 ---
 
@@ -101,7 +118,9 @@ docker run --rm -p 3456:3456 \
    }
    ```
 
-3. Herstart Claude Desktop of voeg via de developer menu de nieuwe MCP-server toe.
+   * **Linux-gebruikers:** pas `"OLLAMA_API=http://host.docker.internal:11434"` aan naar je host-bridge-IP.
+
+3. Herstart Claude Desktop of voeg via het developer menu de nieuwe MCP-server toe.
 
 4. Je kunt nu in Claude Desktop je eigen lokale Ollama-modellen gebruiken!
 
