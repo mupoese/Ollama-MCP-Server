@@ -1,0 +1,17 @@
+{
+  "name": "ollama-mcp-server",
+  "version": "0.1.0",
+  "description": "Custom MCP server for Ollama (by Mupoese)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "author": "Mupoese",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
