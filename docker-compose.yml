@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  ollama-mcp:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "3456:3456"
+    restart: unless-stopped
