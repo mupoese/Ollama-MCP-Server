@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
-const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
-const { 
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { 
   CallToolRequestSchema,
   ErrorCode,
   ListToolsRequestSchema,
   McpError,
-} = require('@modelcontextprotocol/sdk/types.js');
-const axios = require('axios');
+} from '@modelcontextprotocol/sdk/types.js';
+import axios from 'axios';
 
 // Configuration
 const OLLAMA_API = process.env.OLLAMA_API || "http://host.docker.internal:11434";
@@ -19,7 +19,7 @@ class OllamaMCPServer {
     this.server = new Server(
       {
         name: "ollama-mcp-server",
-        version: "0.1.0",
+        version: "1.0.0",
       },
       {
         capabilities: {
@@ -34,7 +34,9 @@ class OllamaMCPServer {
 
   setupErrorHandling() {
     this.server.onerror = (error) => {
-      console.error("[MCP Error]", error);
+      if (!SILENCE_STARTUP) {
+        console.error("[MCP Error]", error);
+      }
     };
 
     process.on('SIGINT', async () => {
@@ -290,9 +292,10 @@ class OllamaMCPServer {
 }
 
 // Start the server
-if (require.main === module) {
-  const server = new OllamaMCPServer();
-  server.run().catch(console.error);
-}
-
-module.exports = OllamaMCPServer;
+const server = new OllamaMCPServer();
+server.run().catch((error) => {
+  if (!SILENCE_STARTUP) {
+    console.error("Failed to start server:", error);
+  }
+  process.exit(1);
+});

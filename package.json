@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Ollama Model Context Protocol Server",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
@@ -15,6 +16,6 @@
     "node": ">=18.0.0"
   },
   "keywords": ["mcp", "ollama", "ai", "llm"],
-  "author": "Your Name",
+  "author": "mupoese",
   "license": "GPL-2.0"
 }
