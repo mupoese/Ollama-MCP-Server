@@ -1,7 +1,7 @@
 # Ollama-MCP-Server
 
-**Auteur/beheerder:** [Mupoese](https://github.com/mupoese)  [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mup1987)
-
+**Auteur/beheerder:** [Mupoese](https://github.com/mupoese)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mup1987)
 **Versie:** v1.0.0  
 **Licentie:** GNU General Public License v2.0
 
