@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  ollama-mcp-server:
+    build: .
+    # Or use pre-built image:
+    # image: docker.io/mup1987/ollama-mcp-server:latest
+    environment:
+      - OLLAMA_API=http://ollama:11434
+      # For external Ollama: use http://host.docker.internal:11434
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    networks:
+      - ollama-network
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - ollama-network
+    # For GPU support (NVIDIA):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  ollama_data:
+    driver: local
+
+networks:
+  ollama-network:
+    driver: bridge
