@@ -11,7 +11,8 @@ const {
 const axios = require('axios');
 
 // Configuration
-const OLLAMA_API = process.env.OLLAMA_API || "http://localhost:11434";
+const OLLAMA_API = process.env.OLLAMA_API || "http://host.docker.internal:11434";
+const SILENCE_STARTUP = process.env.SILENCE_STARTUP === 'true';
 
 class OllamaMCPServer {
   constructor() {
@@ -281,8 +282,10 @@ class OllamaMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     
-    // Don't log to stdout - it interferes with MCP protocol
-    console.error("Ollama MCP Server running...");
+    // Only log to stderr if SILENCE_STARTUP is not enabled
+    if (!SILENCE_STARTUP) {
+      console.error("Ollama MCP Server running...");
+    }
   }
 }
 
