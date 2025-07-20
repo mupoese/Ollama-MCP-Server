@@ -1,13 +1,9 @@
 # Ollama-MCP-Server
 
-**Auteur/beheerder:** [Mupoese](https://github.com/mupoese)
-
+**Auteur/beheerder:** [Mupoese](https://github.com/mupoese)  
 **Versie:** v1.0.0  
-
 **Licentie:** GNU General Public License v2.0
 
----
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mup1987)
 ---
 
 ## Overzicht
@@ -62,6 +58,40 @@ Dit project biedt maximale flexibiliteit, privacy, open source gebruik en profes
 
 ---
 
+## Standaard Docker-conventie: docker.io tag
+
+`docker.io/mup1987/ollama-mcp-server:latest` is **identiek** aan `mup1987/ollama-mcp-server:latest` (Docker Hub gebruikt automatisch `docker.io` als je geen registry opgeeft).
+
+Je mag dus altijd beide gebruiken. Voor CI/CD of duidelijkheid is een volledig pad soms gewenst.
+
+---
+
+## Voorbeeld: Volledig Docker gebruik
+
+**Build:**
+```bash
+docker build -t docker.io/mup1987/ollama-mcp-server:latest .
+````
+
+*(of kort: `-t mup1987/ollama-mcp-server:latest`)*
+
+**Push:**
+
+```bash
+docker push docker.io/mup1987/ollama-mcp-server:latest
+```
+
+**Run:**
+
+```bash
+docker run --rm -p 3456:3456 \
+  -e PORT=3456 \
+  -e OLLAMA_API=http://host.docker.internal:11434 \
+  docker.io/mup1987/ollama-mcp-server:latest
+```
+
+---
+
 ## Gebruik met Docker
 
 ### **Windows / PowerShell**
@@ -69,8 +99,8 @@ Dit project biedt maximale flexibiliteit, privacy, open source gebruik en profes
 Gebruik **alles op één regel** (géén backslashes of linebreaks):
 
 ```powershell
-docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 mupoese/ollama-mcp-server:1.0.0
-````
+docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 docker.io/mup1987/ollama-mcp-server:latest
+```
 
 > **Let op:** Powershell ondersteunt geen Unix-linebreak (`\`).
 > Elk `-e` argument direct achter elkaar op dezelfde regel plaatsen.
@@ -80,7 +110,7 @@ docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.inter
 ```powershell
 $env:PORT=3456
 $env:OLLAMA_API="http://host.docker.internal:11434"
-docker run --rm -p 3456:3456 mupoese/ollama-mcp-server:1.0.0
+docker run --rm -p 3456:3456 docker.io/mup1987/ollama-mcp-server:latest
 ```
 
 ---
@@ -93,7 +123,7 @@ Hier kun je wél met backslashes multi-line werken:
 docker run --rm -p 3456:3456 \
   -e PORT=3456 \
   -e OLLAMA_API=http://172.17.0.1:11434 \
-  mupoese/ollama-mcp-server:1.0.0
+  docker.io/mup1987/ollama-mcp-server:latest
 ```
 
 > **Let op:** Controleer op Linux je bridge IP met
@@ -111,10 +141,10 @@ docker run --rm -p 3456:3456 \
 
 ### Samenvatting per platform
 
-| Platform        | Aanbevolen commando                                                                                                         |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Windows/PS**  | `docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 mupoese/ollama-mcp-server:1.0.0` |
-| **Linux/macOS** | Zie bovenstaande Bash-voorbeeld                                                                                             |
+| Platform        | Aanbevolen commando                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Windows/PS**  | `docker run --rm -p 3456:3456 -e PORT=3456 -e OLLAMA_API=http://host.docker.internal:11434 docker.io/mup1987/ollama-mcp-server:latest` |
+| **Linux/macOS** | Zie bovenstaande Bash-voorbeeld                                                                                                        |
 
 ---
 
@@ -123,6 +153,36 @@ docker run --rm -p 3456:3456 \
 * Zet poort 3456 alleen open naar vertrouwde IP’s.
 * Gebruik een Docker restart policy, bijv. `--restart unless-stopped`
 * Monitoring en logging kun je uitbreiden met eigen middleware of tools.
+
+---
+
+## Claude Desktop MCP-config voorbeeld
+
+```json
+{
+  "mcpServers": {
+    "ollama-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-p",
+        "3456:3456",
+        "-e", "PORT=3456",
+        "-e", "OLLAMA_API=http://host.docker.internal:11434",
+        "docker.io/mup1987/ollama-mcp-server:latest"
+      ]
+    }
+  }
+}
+```
+
+---
+
+**TL;DR:**
+
+* Je mag `docker.io/` expliciet schrijven, maar het is optioneel zolang je op Docker Hub publiceert.
+* Beide werken prima voor build, run, push, pull én Claude Desktop config.
 
 ---
 
@@ -171,7 +231,7 @@ docker run --rm -p 3456:3456 \
            "-p", "3456:3456",
            "-e", "PORT=3456",
            "-e", "OLLAMA_API=http://host.docker.internal:11434",
-           "mupoese/ollama-mcp-server:1.0.0"
+           "docker.io/mup1987/ollama-mcp-server:latest"
          ]
        }
      }
@@ -232,9 +292,19 @@ Zie LICENSE.md of gpl-2.0.txt voor de volledige tekst.
 
 ## Onderhoud & Support
 
-* **Auteur/beheerder:** mupoese
+* **Auteur/beheerder:** Mupoese
 * **Issues/bugs:** via GitHub Issues
 * **Feature requests:** via Pull Request of GitHub Issue
+
+---
+
+## Buy Me a Coffee ☕
+
+Vind je dit project handig of wil je de ontwikkeling steunen?
+Vergeet niet om mij een coffee te kopen!
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00.svg?style=flat-square\&logo=buy-me-a-coffee\&logoColor=black)](https://buymeacoffee.com/mup1987)
+
+➡️ **[https://buymeacoffee.com/mup1987](https://buymeacoffee.com/mup1987)**
 
 ---
 
@@ -251,17 +321,10 @@ Zie LICENSE.md of gpl-2.0.txt voor de volledige tekst.
 
 * **Q:** Hoe voeg ik nieuwe functionaliteit toe?
   **A:** Fork de repo, werk in een nieuwe branch en open een Pull Request met duidelijke uitleg.
-  
----
-  
-## Buy Me a Coffee ☕
-
-Vind je dit project handig of wil je de ontwikkeling steunen?  
-Vergeet niet om voor mij een kopje koffie te kopen!  
-
-➡️ **[https://buymeacoffee.com/mup1987](https://buymeacoffee.com/mup1987)**
 
 ---
 
 > **Let op:**
 > Deze README is een levend document en wordt bij elke belangrijke update uitgebreid.
+
+```
