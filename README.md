@@ -68,19 +68,6 @@ Je mag dus altijd beide gebruiken. Voor CI/CD of duidelijkheid is een volledig p
 
 ## Voorbeeld: Volledig Docker gebruik
 
-**Build:**
-```bash
-docker build -t docker.io/mup1987/ollama-mcp-server:latest .
-````
-
-*(of kort: `-t mup1987/ollama-mcp-server:latest`)*
-
-**Push:**
-
-```bash
-docker push docker.io/mup1987/ollama-mcp-server:latest
-```
-
 **Run:**
 
 ```bash
