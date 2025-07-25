@@ -329,6 +329,102 @@ Ollama-MCP-Server/
 
 ---
 
+## Development
+
+### Project Structure
+
+```
+Ollama-MCP-Server/
+├── src/                    # Source code
+│   ├── config/            # Configuration management
+│   │   └── index.js       # Environment and config validation
+│   ├── handlers/          # MCP tool handlers
+│   │   ├── schemas.js     # Tool definitions and schemas
+│   │   └── tools.js       # Tool implementation handlers
+│   ├── utils/             # Utility modules
+│   │   ├── http-client.js # HTTP client with retry logic
+│   │   ├── logger.js      # Structured logging utility
+│   │   └── validation.js  # Input validation utilities
+│   └── server.js          # Main server implementation
+├── tests/                 # Test files
+│   ├── config.test.js     # Configuration tests
+│   ├── schemas.test.js    # Schema tests
+│   ├── validation.test.js # Validation tests
+│   └── setup.js           # Test setup and mocks
+├── .github/workflows/     # CI/CD workflows
+│   └── ci.yml             # GitHub Actions workflow
+├── server.js              # Entry point (backwards compatible)
+├── package.json           # Dependencies and scripts
+├── jest.config.json       # Jest test configuration
+├── eslint.config.js       # ESLint configuration
+├── Dockerfile             # Docker build instructions
+├── docker-compose.yml     # Docker Compose configuration
+├── .env                   # Environment variables example
+├── .gitignore             # Git ignore patterns
+├── LICENSE                # GPL v2.0 license
+└── README.md              # This file
+```
+
+### Development Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/mupoese/Ollama-MCP-Server.git
+   cd Ollama-MCP-Server
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Run linting**:
+   ```bash
+   npm run lint          # Check for issues
+   npm run lint:fix      # Auto-fix issues
+   ```
+
+4. **Run tests**:
+   ```bash
+   npm test              # Run all tests
+   npm run test:watch    # Run tests in watch mode
+   npm run test:coverage # Run tests with coverage
+   ```
+
+5. **Run validation** (lint + test):
+   ```bash
+   npm run validate
+   ```
+
+### Code Quality
+
+- **ESLint**: Enforces consistent code style and catches potential issues
+- **Jest**: Comprehensive test suite with >80% coverage
+- **Structured Logging**: Proper error handling and debugging capabilities
+- **Input Validation**: Robust validation for all tool inputs
+- **Retry Logic**: HTTP requests include exponential backoff retry logic
+- **Modular Architecture**: Clean separation of concerns
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OLLAMA_API` | `http://host.docker.internal:11434` | Ollama API endpoint |
+| `SILENCE_STARTUP` | `false` | Suppress startup logs for MCP compatibility |
+| `DEBUG` | `false` | Enable debug logging |
+| `REQUEST_TIMEOUT` | `30000` | HTTP request timeout in milliseconds |
+| `MAX_RETRIES` | `3` | Maximum number of retry attempts |
+
+### CI/CD
+
+The project includes a GitHub Actions workflow that:
+- Runs linting and tests on Node.js 18.x and 20.x
+- Builds and tests Docker image
+- Runs security audits
+- Reports test coverage
+
+---
+
 ## Troubleshooting
 
 ### Common Issues
