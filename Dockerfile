@@ -13,10 +13,11 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy server code
 COPY server.js ./
+COPY src/ ./src/
 
 # Make server executable
 RUN chmod +x server.js
