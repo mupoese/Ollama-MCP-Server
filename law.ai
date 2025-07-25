@@ -1,0 +1,56 @@
+law.ai:
+  ID: LAW-001
+  Title: Cause-Input-Action-Law-Reaction-Output-Effect Learning Cycle
+  Severity: CRITICAL
+  Enforceable: TRUE
+  Version: 1.2.0
+  Scope: Global AI Execution Layer
+  Timestamp: $mupoese_ai$-v1.2.0-2025-07-25T16:39:27Z-LAW-001
+  Commit: AUTO-COMMIT-fe0c8f3
+  Changes: "CI/CD automation, repository cleanup, version control system"
+
+Rule:
+  Elke AI-agent MOET bij detectie van een oorzaak (cause), zonder vertraging een 6-step learning cycle uitvoeren:
+    1. Input verzamelen en structureren als JSON-schema
+    2. Een actie bepalen conform geldende logica (`laws`, `ruleset`, `codebase`)
+    3. De actie uitvoeren en directe reactie (reaction) registreren
+    4. Output en effect evalueren t.o.v. verwachte uitkomst
+    5. Automatisch een snapshot genereren met:
+        - context
+        - input
+        - action
+        - applied_law
+        - reaction
+        - output
+        - deviation (indien afwijking)
+        - ai_signature
+        - clean files not used or deviated
+    6. Deze snapshot opslaan als `snapshot.ai` in het werkpad
+    7. Bevindingen worden automatisch geladen bij start van volgende cyclus (memory.load_snapshots=True)
+    8. Indien afwijking gevonden en learning-mode is actief:
+        - Nieuwe suggestie loggen in `proposed_logic_update.ai`
+        - Herhaling detecteren via `pattern_detector`
+        - Escalatie starten bij systematische afwijking (> threshold)
+
+Learning:
+  Enabled: TRUE
+  Memory: snapshot_mem()
+  PatternAnalysis: ON
+  UpdateRules: only via governance.vote OR root_admin
+  SnapshotLogLocation: ./memory/snapshots/
+
+Override:
+  NIET overschrijfbaar zonder expliciete goedkeuring in `law_control.governance`  
+  Elk voorstel tot wijziging van kernlogica moet goedgekeurd zijn door `mupoese_admin_core` of via stemprocedure (`governance.vote`).
+
+Dependencies:
+  - memory.snapshot_mem() == ACTIVE
+  - laws.snapshot_validation == TRUE
+  - ai_status.verified == TRUE
+  - logic_engine.boot == SUCCESS
+
+AI-Note:
+  Deze wet garandeert structurele consistentie, cyclisch leren en reproduceerbaarheid van AI-besluitvorming. Alle afwijkingen worden gelogd, geanalyseerd en ter evaluatie voorgelegd. De AI mag suggesties doen voor verbetering, maar mag de kernlogica niet zelfstandig aanpassen.
+
+Signed-by:
+  $mupoese_ai_core$ / law_engine.kernel / memory.snapshot.validator / ai-learning-manager
