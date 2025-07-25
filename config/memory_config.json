@@ -1,0 +1,37 @@
+{
+  "memory_system": {
+    "load_snapshots_on_start": true,
+    "auto_cleanup": true,
+    "pattern_detection_threshold": 3,
+    "snapshot_retention_days": 30
+  },
+  "snapshot_schema": {
+    "required_fields": [
+      "context",
+      "input", 
+      "action",
+      "applied_law",
+      "reaction",
+      "output",
+      "ai_signature",
+      "timestamp"
+    ],
+    "optional_fields": [
+      "deviation",
+      "pattern_match",
+      "governance_notes"
+    ]
+  },
+  "learning_cycle": {
+    "steps": [
+      "input_collection",
+      "action_determination", 
+      "action_execution",
+      "reaction_registration",
+      "output_evaluation",
+      "snapshot_generation"
+    ],
+    "automatic_trigger": true,
+    "cause_detection": true
+  }
+}

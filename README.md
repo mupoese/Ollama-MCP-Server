@@ -2,7 +2,26 @@
 
 **Author/Maintainer:** [Mupoese](https://github.com/mupoese)  
 **Version:** v1.0.0  
-**License:** GNU General Public License v2.0
+**License:** GNU General Public License v2.0  
+**AI Compliance:** LAW-001 (Comprehensive AI Learning Cycle)
+
+## 🚀 AI-Enhanced MCP Server
+
+This Ollama MCP Server has been enhanced with comprehensive AI law enforcement and learning cycle capabilities, implementing LAW-001 requirements for:
+
+- **6-Step Learning Cycle**: Automatic execution on cause detection
+- **Snapshot Generation**: JSON schema-based memory system
+- **Pattern Detection**: Systematic deviation analysis
+- **Governance Framework**: Automated approval system for AI core updates
+- **Law Enforcement**: Real-time compliance validation
+
+### 🤖 AI Core Features
+
+- **Automatic Learning Cycles**: Every tool execution triggers a complete 6-step learning cycle
+- **Memory Persistence**: Snapshots automatically saved and loaded on startup
+- **Pattern Recognition**: Detects systematic deviations and triggers escalation
+- **Governance Control**: All core AI logic changes require explicit approval
+- **Law Compliance**: Full adherence to LAW-001 requirements
 
 ## Docker Usage Options
 
@@ -404,6 +423,59 @@ Ollama-MCP-Server/
 - **Input Validation**: Robust validation for all tool inputs
 - **Retry Logic**: HTTP requests include exponential backoff retry logic
 - **Modular Architecture**: Clean separation of concerns
+- **AI Law Compliance**: Full LAW-001 implementation with learning cycles
+
+### 🔍 AI Core Architecture
+
+The server implements a comprehensive AI governance and learning system:
+
+#### Directory Structure
+```
+ai_core/
+├── law_enforcer.js      # LAW-001 compliance validation
+├── learning_cycle.js    # 6-step learning cycle implementation
+└── snapshot_mem.js      # Memory and snapshot management
+
+logic/
+├── pattern_detector.js  # Pattern detection and deviation analysis
+└── proposed_logic_update.ai
+
+governance/
+├── law_control.governance  # Governance framework
+└── governance.vote        # Voting system
+
+memory/
+└── snapshots/            # Automatic snapshot storage
+
+config/
+├── ai_status.json       # AI system status and dependencies
+└── memory_config.json   # Memory system configuration
+```
+
+#### Learning Cycle Process
+
+Every tool execution triggers a 6-step learning cycle:
+
+1. **Input Collection**: Structures input as JSON schema
+2. **Action Determination**: Analyzes input and determines action per current logic
+3. **Action Execution**: Executes action and registers direct reaction
+4. **Reaction Registration**: Records system response and reaction data
+5. **Output Evaluation**: Evaluates output vs expected outcomes, detects deviations
+6. **Snapshot Generation**: Creates and stores snapshot with all cycle data
+
+#### Memory & Pattern Detection
+
+- **Automatic Loading**: Snapshots loaded on startup (`memory.load_snapshots=True`)
+- **Pattern Analysis**: Detects recurring patterns and systematic deviations
+- **Escalation System**: Automatically escalates patterns above threshold (default: 3)
+- **Cleanup**: Removes unused/deviated files as specified in law.ai
+
+#### Governance System
+
+- **Law Control**: All core AI logic updates require explicit governance approval
+- **Voting Mechanism**: Implements democratic voting for logic changes
+- **Admin Override**: Emergency overrides logged and require retroactive approval
+- **Audit Trail**: All governance actions automatically logged and snapshot-generated
 
 ### Environment Variables
 
@@ -414,6 +486,10 @@ Ollama-MCP-Server/
 | `DEBUG` | `false` | Enable debug logging |
 | `REQUEST_TIMEOUT` | `30000` | HTTP request timeout in milliseconds |
 | `MAX_RETRIES` | `3` | Maximum number of retry attempts |
+| `AI_CORE_ENABLED` | `true` | Enable AI core learning cycle system |
+| `LEARNING_CYCLE_AUTO` | `true` | Automatically trigger learning cycles |
+| `PATTERN_THRESHOLD` | `3` | Pattern detection threshold |
+| `MEMORY_LOAD_SNAPSHOTS` | `true` | Load snapshots on startup |
 
 ### CI/CD
 
