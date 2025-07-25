@@ -8,7 +8,7 @@
  * @law_compliance LAW-001
  */
 
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect } from '@jest/globals';
 
 describe('AI Core Law Enforcement System', () => {
   describe('Configuration and Structure', () => {
@@ -21,7 +21,7 @@ describe('AI Core Law Enforcement System', () => {
         'memory',
         'config',
       ];
-      
+
       // This test verifies the structure is created
       expectedDirs.forEach(dir => {
         expect(dir).toBeTruthy();
@@ -36,7 +36,7 @@ describe('AI Core Law Enforcement System', () => {
         learningCycle: '6-step',
         snapshotGeneration: 'automatic',
       };
-      
+
       expect(lawRequirements.id).toBe('LAW-001');
       expect(lawRequirements.enforceable).toBe(true);
       expect(lawRequirements.learningCycle).toBe('6-step');
@@ -54,7 +54,7 @@ describe('AI Core Law Enforcement System', () => {
         'output_evaluation',
         'snapshot_generation',
       ];
-      
+
       expect(requiredSteps).toHaveLength(6);
       expect(requiredSteps).toContain('input_collection');
       expect(requiredSteps).toContain('snapshot_generation');
@@ -71,7 +71,7 @@ describe('AI Core Law Enforcement System', () => {
         'ai_signature',
         'timestamp',
       ];
-      
+
       expect(requiredSnapshotFields).toHaveLength(8);
       expect(requiredSnapshotFields).toContain('applied_law');
       expect(requiredSnapshotFields).toContain('ai_signature');
@@ -85,7 +85,7 @@ describe('AI Core Law Enforcement System', () => {
         escalation_threshold: 5,
         systematic_deviation_monitoring: true,
       };
-      
+
       expect(patternConfig.detection_threshold).toBe(3);
       expect(patternConfig.escalation_threshold).toBe(5);
       expect(patternConfig.systematic_deviation_monitoring).toBe(true);
@@ -100,7 +100,7 @@ describe('AI Core Law Enforcement System', () => {
         voting_system: 'governance.vote',
         emergency_override_logging: true,
       };
-      
+
       expect(governanceRules.core_logic_updates_require_approval).toBe(true);
       expect(governanceRules.admin_authority).toBe('mupoese_admin_core');
       expect(governanceRules.voting_system).toBe('governance.vote');
@@ -116,14 +116,14 @@ describe('AI Core Law Enforcement System', () => {
         'ai_status.verified',
         'logic_engine.boot',
       ];
-      
+
       const dependencyStatuses = {
         'memory.snapshot_mem': 'ACTIVE',
         'laws.snapshot_validation': true,
         'ai_status.verified': true,
         'logic_engine.boot': 'SUCCESS',
       };
-      
+
       requiredDependencies.forEach(dep => {
         expect(dependencyStatuses[dep]).toBeTruthy();
       });
@@ -135,7 +135,7 @@ describe('AI Core Law Enforcement System', () => {
         auto_cleanup: true,
         pattern_analysis: 'ON',
       };
-      
+
       expect(memoryConfig.load_snapshots_on_start).toBe(true);
       expect(memoryConfig.auto_cleanup).toBe(true);
       expect(memoryConfig.pattern_analysis).toBe('ON');
@@ -151,9 +151,9 @@ describe('AI Core Law Enforcement System', () => {
         law_enforcement_validation: true,
         snapshot_generation_automatic: true,
       };
-      
+
       Object.values(integrationPoints).forEach(point => {
-        expect(point).toBe(true);  
+        expect(point).toBe(true);
       });
     });
 
@@ -164,7 +164,7 @@ describe('AI Core Law Enforcement System', () => {
         configuration_preserved: true,
         minimal_modifications: true,
       };
-      
+
       Object.values(compatibilityChecks).forEach(check => {
         expect(check).toBe(true);
       });
