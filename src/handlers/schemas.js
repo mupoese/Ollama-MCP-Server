@@ -140,6 +140,267 @@ export const TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  // Terminal Tool
+  {
+    name: 'terminal_execute',
+    description: 'Execute shell commands in a controlled environment',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        command: {
+          type: 'string',
+          description: 'The shell command to execute',
+          minLength: 1,
+        },
+        workingDirectory: {
+          type: 'string',
+          description: 'Working directory for command execution (optional)',
+        },
+        environment: {
+          type: 'object',
+          description: 'Environment variables to set for command execution',
+          additionalProperties: {
+            type: 'string',
+          },
+        },
+        timeout: {
+          type: 'integer',
+          description: 'Command timeout in seconds (default: 30)',
+          minimum: 1,
+          maximum: 300,
+        },
+      },
+      required: ['command'],
+      additionalProperties: false,
+    },
+  },
+  // File Management Tools
+  {
+    name: 'file_read',
+    description: 'Read file contents with optional encoding',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Path to the file to read',
+          minLength: 1,
+        },
+        encoding: {
+          type: 'string',
+          description: 'File encoding (default: utf8)',
+          enum: ['utf8', 'ascii', 'base64', 'binary', 'hex'],
+        },
+        maxSize: {
+          type: 'integer',
+          description: 'Maximum file size to read in bytes (default: 1MB)',
+          minimum: 1,
+          maximum: 10485760, // 10MB max
+        },
+      },
+      required: ['path'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'file_write',
+    description: 'Write content to a file with optional encoding',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Path to the file to write',
+          minLength: 1,
+        },
+        content: {
+          type: 'string',
+          description: 'Content to write to the file',
+        },
+        encoding: {
+          type: 'string',
+          description: 'File encoding (default: utf8)',
+          enum: ['utf8', 'ascii', 'base64', 'binary', 'hex'],
+        },
+        createDirectories: {
+          type: 'boolean',
+          description: 'Create parent directories if they don\'t exist (default: false)',
+        },
+        backup: {
+          type: 'boolean',
+          description: 'Create backup of existing file (default: false)',
+        },
+      },
+      required: ['path', 'content'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'file_list',
+    description: 'List files and directories with optional filtering',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Directory path to list (default: current directory)',
+        },
+        pattern: {
+          type: 'string',
+          description: 'Glob pattern for filtering files',
+        },
+        recursive: {
+          type: 'boolean',
+          description: 'List files recursively (default: false)',
+        },
+        includeHidden: {
+          type: 'boolean',
+          description: 'Include hidden files and directories (default: false)',
+        },
+        details: {
+          type: 'boolean',
+          description: 'Include file details (size, modified date, permissions)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  // Testing Framework Tools
+  {
+    name: 'test_run',
+    description: 'Run tests with configurable options',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        testPath: {
+          type: 'string',
+          description: 'Specific test file or directory to run',
+        },
+        pattern: {
+          type: 'string',
+          description: 'Test name pattern to match',
+        },
+        watch: {
+          type: 'boolean',
+          description: 'Run tests in watch mode (default: false)',
+        },
+        coverage: {
+          type: 'boolean',
+          description: 'Generate coverage report (default: false)',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Verbose output (default: false)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'test_discover',
+    description: 'Discover and list available tests',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Directory to search for tests (default: tests/)',
+        },
+        pattern: {
+          type: 'string',
+          description: 'Test file pattern (default: *.test.js)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  // Code Quality Tools
+  {
+    name: 'lint_check',
+    description: 'Run ESLint on specified files or directories',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File or directory path to lint (default: current directory)',
+        },
+        fix: {
+          type: 'boolean',
+          description: 'Automatically fix linting issues (default: false)',
+        },
+        format: {
+          type: 'string',
+          description: 'Output format for lint results',
+          enum: ['stylish', 'compact', 'json', 'unix', 'visualstudio'],
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'audit_security',
+    description: 'Run security audit on dependencies',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fix: {
+          type: 'boolean',
+          description: 'Automatically fix security issues (default: false)',
+        },
+        level: {
+          type: 'string',
+          description: 'Minimum severity level to report',
+          enum: ['info', 'low', 'moderate', 'high', 'critical'],
+        },
+        production: {
+          type: 'boolean',
+          description: 'Only audit production dependencies (default: false)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  // MCP Server Specific Tools
+  {
+    name: 'server_status',
+    description: 'Get current MCP server status and diagnostics',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        detailed: {
+          type: 'boolean',
+          description: 'Include detailed diagnostics (default: false)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'validate_config',
+    description: 'Validate MCP server configuration',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        configPath: {
+          type: 'string',
+          description: 'Path to configuration file (optional)',
+        },
+        showDetails: {
+          type: 'boolean',
+          description: 'Show detailed validation results (default: true)',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
 ];
 
 /**

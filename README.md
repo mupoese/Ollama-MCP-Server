@@ -294,12 +294,119 @@ Add this to your Claude Desktop MCP configuration:
 
 Once connected to Claude Desktop, these tools become available:
 
+### Core Ollama Tools
 | Tool Name           | Description                              |
 | ------------------- | ---------------------------------------- |
 | `ollama_list_models`| List all available Ollama models        |
 | `ollama_chat`       | Chat with an Ollama model               |
 | `ollama_generate`   | Generate text with an Ollama model      |
 | `ollama_pull_model` | Pull/download a model from registry     |
+
+### 🛠️ Development & Testing Tools
+| Tool Name           | Description                              |
+| ------------------- | ---------------------------------------- |
+| `terminal_execute`  | Execute shell commands in controlled environment |
+| `test_run`         | Run Jest tests with configurable options |
+| `test_discover`    | Discover and list available test files   |
+
+### 📁 File Management Tools
+| Tool Name           | Description                              |
+| ------------------- | ---------------------------------------- |
+| `file_read`        | Read file contents with encoding support |
+| `file_write`       | Write content to files with backup options |
+| `file_list`        | List files and directories with filtering |
+
+### 🔍 Code Quality Tools
+| Tool Name           | Description                              |
+| ------------------- | ---------------------------------------- |
+| `lint_check`       | Run ESLint with auto-fix capabilities   |
+| `audit_security`   | Run npm security audit on dependencies  |
+
+### ⚙️ Server Management Tools
+| Tool Name           | Description                              |
+| ------------------- | ---------------------------------------- |
+| `server_status`    | Get MCP server status and diagnostics   |
+| `validate_config`  | Validate MCP server configuration       |
+
+### Tool Usage Examples
+
+#### Terminal Operations
+```javascript
+// Execute a safe command
+terminal_execute({
+  command: "npm test",
+  workingDirectory: "/path/to/project",
+  timeout: 60
+})
+
+// List project files
+file_list({
+  path: ".",
+  pattern: "*.js",
+  recursive: true,
+  details: true
+})
+```
+
+#### Testing & Quality
+```javascript
+// Run specific tests
+test_run({
+  testPath: "tests/config.test.js",
+  coverage: true,
+  verbose: true
+})
+
+// Check code quality
+lint_check({
+  path: "src/",
+  fix: true,
+  format: "stylish"
+})
+
+// Security audit
+audit_security({
+  level: "high",
+  fix: false
+})
+```
+
+#### File Operations
+```javascript
+// Read configuration file
+file_read({
+  path: "package.json",
+  encoding: "utf8"
+})
+
+// Write with backup
+file_write({
+  path: "config.json",
+  content: JSON.stringify(config, null, 2),
+  backup: true,
+  createDirectories: true
+})
+```
+
+#### Server Management
+```javascript
+// Check server status
+server_status({
+  detailed: true
+})
+
+// Validate configuration
+validate_config({
+  showDetails: true
+})
+```
+
+### Security Features
+
+- **Path Security**: File operations prevent access to system directories (`/etc/`, `/sys/`)
+- **Command Filtering**: Terminal execution blocks dangerous commands (`rm -rf`, `sudo`, etc.)
+- **File Size Limits**: File reads limited to prevent memory exhaustion
+- **Timeout Protection**: All operations have configurable timeouts
 
 ---
 
