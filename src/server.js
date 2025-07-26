@@ -29,6 +29,12 @@ import {
   handlePullModel,
 } from './handlers/tools.js';
 
+// AI Core modules for LAW-001 compliance
+import { lawEnforcer } from '../ai_core/law_enforcer.js';
+import { learningCycle } from '../ai_core/learning_cycle.js';
+import { snapshotManager } from '../ai_core/snapshot_mem.js';
+import { patternDetector } from '../logic/pattern_detector.js';
+
 /**
  * Ollama MCP Server class
  * Manages the MCP server instance and tool handlers
@@ -39,11 +45,13 @@ class OllamaMCPServer {
    */
   constructor() {
     this.config = getConfig();
+    this.aiCoreInitialized = false;
 
     logger.debug('Initializing Ollama MCP Server', {
       version: this.config.SERVER_VERSION,
       ollamaApi: this.config.OLLAMA_API,
       silenceStartup: this.config.SILENCE_STARTUP,
+      lawEnforcement: 'LAW-001',
     });
 
     this.server = new Server(
@@ -60,6 +68,11 @@ class OllamaMCPServer {
 
     this.setupRequestHandlers();
     this.setupErrorHandling();
+
+    // Initialize AI Core system for LAW-001 compliance
+    this.initializeAICore().catch(error => {
+      logger.error('Failed to initialize AI Core system:', error);
+    });
   }
 
   /**
@@ -86,6 +99,66 @@ class OllamaMCPServer {
     process.on('unhandledRejection', (reason, promise) => {
       logger.error('Unhandled promise rejection', { reason, promise });
     });
+  }
+
+  /**
+   * Initialize AI Core System for LAW-001 compliance
+   */
+  async initializeAICore() {
+    try {
+      logger.info('Initializing AI Core System for LAW-001 compliance');
+
+      // Initialize law enforcement system
+      await lawEnforcer.initialize();
+
+      // Initialize snapshot memory system
+      await snapshotManager.initialize();
+
+      // Initialize pattern detector
+      await patternDetector.initialize();
+
+      this.aiCoreInitialized = true;
+      logger.info('AI Core System initialized successfully');
+
+      // Trigger initial learning cycle to demonstrate system is working
+      await this.triggerLearningCycle('system_initialization', {
+        server_version: this.config.SERVER_VERSION,
+        initialization_time: new Date().toISOString(),
+      });
+
+    } catch (error) {
+      logger.error('AI Core initialization failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Trigger learning cycle as required by LAW-001
+   * @param {string} cause - The detected cause
+   * @param {Object} context - Context information
+   */
+  async triggerLearningCycle(cause, context = {}) {
+    try {
+      if (!this.aiCoreInitialized) {
+        logger.warn('AI Core not initialized, skipping learning cycle');
+        return;
+      }
+
+      logger.debug(`Triggering learning cycle for cause: ${cause}`);
+
+      // Execute the 6-step learning cycle as required by LAW-001
+      const cycleResult = await learningCycle.executeCycle(cause, context);
+
+      logger.debug('Learning cycle completed', {
+        cycleId: cycleResult.currentCycle?.steps?.step6_snapshot?.snapshot_id,
+      });
+
+      return cycleResult;
+
+    } catch (error) {
+      logger.error('Learning cycle execution failed:', error);
+      // Don't throw to avoid breaking main server operations
+    }
   }
 
   /**
@@ -119,19 +192,31 @@ class OllamaMCPServer {
           );
         }
 
+        // Trigger learning cycle for tool execution (LAW-001 compliance)
+        await this.triggerLearningCycle(`tool_execution_${toolName}`, {
+          tool_name: toolName,
+          arguments: args,
+          timestamp: new Date().toISOString(),
+        });
+
         // Route to appropriate handler
+        let result;
         switch (toolName) {
         case 'ollama_list_models':
-          return await handleListModels();
+          result = await handleListModels();
+          break;
 
         case 'ollama_chat':
-          return await handleChat(args);
+          result = await handleChat(args);
+          break;
 
         case 'ollama_generate':
-          return await handleGenerate(args);
+          result = await handleGenerate(args);
+          break;
 
         case 'ollama_pull_model':
-          return await handlePullModel(args);
+          result = await handlePullModel(args);
+          break;
 
         default:
           // This should never happen due to validation above
@@ -140,7 +225,25 @@ class OllamaMCPServer {
             `Unimplemented tool: ${toolName}`,
           );
         }
+
+        // Trigger learning cycle for successful completion
+        await this.triggerLearningCycle(`tool_completion_${toolName}`, {
+          tool_name: toolName,
+          success: true,
+          result_type: typeof result,
+          timestamp: new Date().toISOString(),
+        });
+
+        return result;
       } catch (error) {
+        // Trigger learning cycle for error handling
+        await this.triggerLearningCycle(`tool_error_${toolName}`, {
+          tool_name: toolName,
+          error_message: error.message,
+          error_type: error.constructor.name,
+          timestamp: new Date().toISOString(),
+        });
+
         // Re-throw MCP errors as-is
         if (error instanceof McpError) {
           throw error;
