@@ -1,21 +1,20 @@
-#Created by mupoese.nl
+#Gemaakt door Mohammed Uthmaan Poese van bedrijf mupoese.nl
 
 law.ai:
-  ID: LAW-001
+  ID: AI-LAW-001
   Title: Cause-Input-Action-Law-Reaction-Output-Effect Learning Cycle
   Severity: CRITICAL
   Enforceable: TRUE
-  Version: 1.2.1
+  Version: 1.2.0
   Scope: Global AI Execution Layer
   Timestamp: $mupoese_ai$-v1.2.0-2025-07-25T16:39:27Z-LAW-001
   Commit: AUTO-COMMIT
-  Changes: "CI/CD automation, repository cleanup, version control system"
-
+  
 Rule:
-  Elke AI-agent MOET bij detectie van een oorzaak (cause), zonder vertraging een 6-step learning cycle uitvoeren:
-    1. Input verzamelen en structureren als JSON-schema
-    2. Een actie bepalen conform geldende logica (`laws`, `ruleset`, `codebase`)
-    3. De actie uitvoeren en directe reactie (reaction) registreren
+  Elke AI-agent MOET bij detectie van een oorzaak (cause), zonder vertraging een 8-step learning cycle uitvoeren:
+    1. Input verzamelen en structureren als JSON-schema 'structuur.ai'
+    2. Een actie bepalen conform geldende logica (`laws`, `ruleset`, `codebase`) en dit samevatten in de json-schema
+    3. De actie uitvoeren en directe reactie (reaction) registreren in de json-schema
     4. Output en effect evalueren t.o.v. verwachte uitkomst
     5. Automatisch een snapshot genereren met:
         - context
@@ -33,7 +32,6 @@ Rule:
         - Nieuwe suggestie loggen in `proposed_logic_update.ai`
         - Herhaling detecteren via `pattern_detector`
         - Escalatie starten bij systematische afwijking (> threshold)
-    9. Bij uitvoeren van wijzigingen in code werk versie bij, en alle *.md bestanden
 
 Learning:
   Enabled: TRUE
@@ -43,10 +41,10 @@ Learning:
   SnapshotLogLocation: ./memory/snapshots/
 
 Override:
-  NIET overschrijfbaar zonder expliciete goedkeuring in `law_control.governance`  
+  NIET overschrijfbaar zonder expliciete goedkeuring in `law_control.governance` als bestand niet bestaat aanmaken en enforcen
   Elk voorstel tot wijziging van kernlogica moet goedgekeurd zijn door `mupoese_admin_core` of via stemprocedure (`governance.vote`).
 
-Dependencies:
+Dependencies aanmaken of gebruiken als het bestaat:
   - memory.snapshot_mem() == ACTIVE
   - laws.snapshot_validation == TRUE
   - ai_status.verified == TRUE
