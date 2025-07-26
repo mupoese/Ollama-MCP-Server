@@ -27,6 +27,16 @@ import {
   handleChat,
   handleGenerate,
   handlePullModel,
+  handleTerminalExecute,
+  handleFileRead,
+  handleFileWrite,
+  handleFileList,
+  handleTestRun,
+  handleTestDiscover,
+  handleLintCheck,
+  handleAuditSecurity,
+  handleServerStatus,
+  handleValidateConfig,
 } from './handlers/tools.js';
 
 // AI Core modules for LAW-001 compliance
@@ -216,6 +226,46 @@ class OllamaMCPServer {
 
         case 'ollama_pull_model':
           result = await handlePullModel(args);
+          break;
+
+        case 'terminal_execute':
+          result = await handleTerminalExecute(args);
+          break;
+
+        case 'file_read':
+          result = await handleFileRead(args);
+          break;
+
+        case 'file_write':
+          result = await handleFileWrite(args);
+          break;
+
+        case 'file_list':
+          result = await handleFileList(args);
+          break;
+
+        case 'test_run':
+          result = await handleTestRun(args);
+          break;
+
+        case 'test_discover':
+          result = await handleTestDiscover(args);
+          break;
+
+        case 'lint_check':
+          result = await handleLintCheck(args);
+          break;
+
+        case 'audit_security':
+          result = await handleAuditSecurity(args);
+          break;
+
+        case 'server_status':
+          result = await handleServerStatus(args);
+          break;
+
+        case 'validate_config':
+          result = await handleValidateConfig(args);
           break;
 
         default:

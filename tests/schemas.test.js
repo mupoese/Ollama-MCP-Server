@@ -76,11 +76,22 @@ describe('Tool Schemas', () => {
     test('should return array of all tool names', () => {
       const names = getToolNames();
       expect(Array.isArray(names)).toBe(true);
-      expect(names.length).toBe(4);
+      expect(names.length).toBe(14); // Updated to reflect all new tools
       expect(names).toContain('ollama_list_models');
       expect(names).toContain('ollama_chat');
       expect(names).toContain('ollama_generate');
       expect(names).toContain('ollama_pull_model');
+      // New tools
+      expect(names).toContain('terminal_execute');
+      expect(names).toContain('file_read');
+      expect(names).toContain('file_write');
+      expect(names).toContain('file_list');
+      expect(names).toContain('test_run');
+      expect(names).toContain('test_discover');
+      expect(names).toContain('lint_check');
+      expect(names).toContain('audit_security');
+      expect(names).toContain('server_status');
+      expect(names).toContain('validate_config');
     });
   });
 
