@@ -12,16 +12,13 @@ import {
   validatePullModelArgs,
   ValidationError,
 } from '../utils/validation.js';
-import { exec, spawn } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { glob } from 'glob';
 
 const execAsync = promisify(exec);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * List all available Ollama models
@@ -447,7 +444,7 @@ export async function handleFileList(args) {
     } = args;
 
     const resolvedPath = path.resolve(dirPath);
-    
+
     // Security validation
     if (resolvedPath.includes('..') || resolvedPath.startsWith('/etc/') || resolvedPath.startsWith('/sys/')) {
       throw new McpError(
@@ -463,12 +460,12 @@ export async function handleFileList(args) {
     };
 
     const files = await glob(globPattern, globOptions);
-    
+
     let result = `Directory listing: ${dirPath}\nPattern: ${pattern}\nRecursive: ${recursive}\n\n`;
 
     if (details) {
       const fileDetails = await Promise.all(
-        files.map(async (file) => {
+        files.map(async(file) => {
           try {
             const stats = await fs.stat(file);
             const relativePath = path.relative(resolvedPath, file);
@@ -538,23 +535,23 @@ export async function handleTestRun(args) {
     const { testPath, pattern, watch = false, coverage = false, verbose = false } = args;
 
     let command = 'NODE_OPTIONS="--experimental-vm-modules" npx jest';
-    
+
     if (testPath) {
       command += ` --testPathPatterns="${testPath}"`;
     }
-    
+
     if (pattern) {
       command += ` --testNamePattern="${pattern}"`;
     }
-    
+
     if (watch) {
       command += ' --watch';
     }
-    
+
     if (coverage) {
       command += ' --coverage';
     }
-    
+
     if (verbose) {
       command += ' --verbose';
     }
@@ -612,7 +609,7 @@ export async function handleTestDiscover(args) {
     const testFiles = await glob(globPattern);
 
     let result = `Test Discovery\nPath: ${testPath}\nPattern: ${pattern}\n\n`;
-    
+
     if (testFiles.length === 0) {
       result += 'No test files found.';
     } else {
@@ -652,11 +649,11 @@ export async function handleLintCheck(args) {
     const { path: lintPath = '.', fix = false, format = 'stylish' } = args;
 
     let command = `npx eslint "${lintPath}"`;
-    
+
     if (fix) {
       command += ' --fix';
     }
-    
+
     if (format) {
       command += ` --format ${format}`;
     }
@@ -710,19 +707,19 @@ export async function handleAuditSecurity(args) {
     const { fix = false, level = 'moderate', production = false } = args;
 
     let command = 'npm audit';
-    
+
     if (fix) {
       command += ' --fix';
     }
-    
+
     if (level !== 'moderate') {
       command += ` --audit-level=${level}`;
     }
-    
+
     if (production) {
       command += ' --production';
     }
-    
+
     command += ' --json';
 
     const { stdout, stderr } = await execAsync(command, {
@@ -737,7 +734,7 @@ export async function handleAuditSecurity(args) {
       if (auditData.vulnerabilities) {
         const vulnCount = Object.keys(auditData.vulnerabilities).length;
         result += `Found ${vulnCount} vulnerabilities\n\n`;
-        
+
         Object.entries(auditData.vulnerabilities).forEach(([pkg, vuln]) => {
           result += `Package: ${pkg}\n`;
           result += `Severity: ${vuln.severity}\n`;
@@ -747,7 +744,7 @@ export async function handleAuditSecurity(args) {
       } else {
         result += 'No vulnerabilities found!';
       }
-    } catch (parseError) {
+    } catch {
       result += stdout || 'No vulnerabilities found!';
     }
 
@@ -773,11 +770,11 @@ export async function handleAuditSecurity(args) {
       try {
         const auditData = JSON.parse(error.stdout);
         let result = 'Security Audit Results:\n\n';
-        
+
         if (auditData.vulnerabilities) {
           const vulnCount = Object.keys(auditData.vulnerabilities).length;
           result += `Found ${vulnCount} vulnerabilities\n\n`;
-          
+
           Object.entries(auditData.vulnerabilities).forEach(([pkg, vuln]) => {
             result += `Package: ${pkg}\n`;
             result += `Severity: ${vuln.severity}\n`;
@@ -794,7 +791,7 @@ export async function handleAuditSecurity(args) {
             },
           ],
         };
-      } catch (parseError) {
+      } catch (error) {
         return {
           content: [
             {
@@ -828,20 +825,20 @@ export async function handleServerStatus(args) {
     const memoryUsage = process.memoryUsage();
 
     let result = 'MCP Server Status\n\n';
-    result += `Status: Running\n`;
+    result += 'Status: Running\n';
     result += `Uptime: ${Math.floor(startTime / 60)} minutes, ${Math.floor(startTime % 60)} seconds\n`;
     result += `Memory Usage: ${Math.round(memoryUsage.rss / 1024 / 1024)} MB\n`;
     result += `Node.js Version: ${process.version}\n`;
     result += `Process ID: ${process.pid}\n`;
 
     if (detailed) {
-      result += `\nDetailed Memory Usage:\n`;
+      result += '\nDetailed Memory Usage:\n';
       result += `- RSS: ${Math.round(memoryUsage.rss / 1024 / 1024)} MB\n`;
       result += `- Heap Total: ${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB\n`;
       result += `- Heap Used: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB\n`;
       result += `- External: ${Math.round(memoryUsage.external / 1024 / 1024)} MB\n`;
 
-      result += `\nEnvironment:\n`;
+      result += '\nEnvironment:\n';
       result += `- Platform: ${process.platform}\n`;
       result += `- Architecture: ${process.arch}\n`;
       result += `- Working Directory: ${process.cwd()}\n`;
@@ -849,7 +846,7 @@ export async function handleServerStatus(args) {
       // Check Ollama connection
       try {
         await ollamaClient.get('/api/tags');
-        result += `\nOllama Connection: Connected\n`;
+        result += '\nOllama Connection: Connected\n';
       } catch (error) {
         result += `\nOllama Connection: Failed (${error.message})\n`;
       }
@@ -894,7 +891,7 @@ export async function handleValidateConfig(args) {
     const optionalVars = ['SILENCE_STARTUP', 'DEBUG', 'REQUEST_TIMEOUT', 'MAX_RETRIES'];
 
     result += 'Environment Variables:\n';
-    
+
     // Check required variables
     requiredVars.forEach(varName => {
       const value = config[varName];
@@ -917,7 +914,7 @@ export async function handleValidateConfig(args) {
     result += '\nOllama Connection Test:\n';
     try {
       const response = await ollamaClient.get('/api/tags');
-      result += `✓ Successfully connected to Ollama\n`;
+      result += '✓ Successfully connected to Ollama\n';
       result += `✓ Found ${response.models?.length || 0} models\n`;
     } catch (error) {
       result += `✗ Failed to connect to Ollama: ${error.message}\n`;
@@ -929,7 +926,7 @@ export async function handleValidateConfig(args) {
         const configContent = await fs.readFile(configPath, 'utf8');
         const configData = JSON.parse(configContent);
         result += `\nConfiguration File (${configPath}):\n`;
-        result += `✓ Valid JSON format\n`;
+        result += '✓ Valid JSON format\n';
         if (showDetails) {
           result += `✓ Content preview: ${JSON.stringify(configData, null, 2).substring(0, 200)}...\n`;
         }
