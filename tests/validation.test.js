@@ -11,6 +11,7 @@ import {
   validateChatArgs,
   validateGenerateArgs,
   validatePullModelArgs,
+  validateCodeFeedbackArgs,
 } from '../src/utils/validation.js';
 
 describe('Validation', () => {
@@ -178,6 +179,96 @@ describe('Validation', () => {
     test('should throw for missing name', () => {
       const args = {};
       expect(() => validatePullModelArgs(args)).toThrow('name must be a string');
+    });
+  });
+
+  describe('validateCodeFeedbackArgs', () => {
+    test('should pass for valid code feedback arguments', () => {
+      const args = {
+        code: 'function hello() { return "world"; }',
+        language: 'javascript',
+        provider: 'ollama',
+        model: 'llama2',
+        feedbackType: 'general',
+      };
+      const result = validateCodeFeedbackArgs(args);
+      expect(result.code).toBe(args.code);
+      expect(result.language).toBe(args.language);
+      expect(result.provider).toBe(args.provider);
+      expect(result.model).toBe(args.model);
+      expect(result.feedbackType).toBe(args.feedbackType);
+    });
+
+    test('should throw for missing code', () => {
+      const args = {
+        language: 'javascript',
+        provider: 'ollama',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('code must be a string');
+    });
+
+    test('should throw for missing language', () => {
+      const args = {
+        code: 'test code',
+        provider: 'ollama',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('language must be a string');
+    });
+
+    test('should throw for missing provider', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider must be a string');
+    });
+
+    test('should throw for invalid provider', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+        provider: 'invalid-provider',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider must be one of:');
+    });
+
+    test('should throw for missing model when using ollama provider', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+        provider: 'ollama',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('model must be a string');
+    });
+
+    test('should not require model for non-ollama providers', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+        provider: 'github',
+      };
+      const result = validateCodeFeedbackArgs(args);
+      expect(result.model).toBeUndefined();
+    });
+
+    test('should set default feedbackType to general', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+        provider: 'github',
+      };
+      const result = validateCodeFeedbackArgs(args);
+      expect(result.feedbackType).toBe('general');
+    });
+
+    test('should throw for invalid feedbackType', () => {
+      const args = {
+        code: 'test code',
+        language: 'javascript',
+        provider: 'github',
+        feedbackType: 'invalid-type',
+      };
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('feedbackType must be one of:');
     });
   });
 });

@@ -27,6 +27,7 @@ import {
   handleChat,
   handleGenerate,
   handlePullModel,
+  handleCodeFeedback,
   handleTerminalExecute,
   handleFileRead,
   handleFileWrite,
@@ -287,6 +288,10 @@ class OllamaMCPServer {
 
         case 'ollama_pull_model':
           result = await handlePullModel(args);
+          break;
+
+        case 'ai_code_feedback':
+          result = await handleCodeFeedback(args);
           break;
 
         case 'terminal_execute':

@@ -76,11 +76,12 @@ describe('Tool Schemas', () => {
     test('should return array of all tool names', () => {
       const names = getToolNames();
       expect(Array.isArray(names)).toBe(true);
-      expect(names.length).toBe(73); // Updated to reflect all new tools including GitHub and Browser tools
+      expect(names.length).toBe(74); // Updated to reflect all tools including new ai_code_feedback tool
       expect(names).toContain('ollama_list_models');
       expect(names).toContain('ollama_chat');
       expect(names).toContain('ollama_generate');
       expect(names).toContain('ollama_pull_model');
+      expect(names).toContain('ai_code_feedback');
       // New tools
       expect(names).toContain('terminal_execute');
       expect(names).toContain('file_read');

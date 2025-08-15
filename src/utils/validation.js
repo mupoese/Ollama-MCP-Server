@@ -213,3 +213,65 @@ export function validatePullModelArgs(args) {
     name: modelName,
   };
 }
+
+/**
+ * Validate code feedback tool arguments
+ * @param {Object} args - Arguments to validate
+ * @returns {Object} Validated arguments
+ * @throws {ValidationError} If validation fails
+ */
+export function validateCodeFeedbackArgs(args) {
+  if (!args || typeof args !== 'object') {
+    throw new ValidationError('Arguments must be an object');
+  }
+
+  validateRequiredString(args.code, 'code');
+  validateRequiredString(args.language, 'language');
+  validateRequiredString(args.provider, 'provider');
+
+  // Validate provider
+  const validProviders = ['ollama', 'github', 'claude', 'chatgpt'];
+  if (!validProviders.includes(args.provider)) {
+    throw new ValidationError(
+      `provider must be one of: ${validProviders.join(', ')}`,
+      'provider',
+    );
+  }
+
+  // For ollama provider, model is required
+  if (args.provider === 'ollama') {
+    validateRequiredString(args.model, 'model');
+  }
+
+  // Validate feedback type if provided
+  if (args.feedbackType) {
+    const validTypes = ['general', 'performance', 'security', 'style', 'bugs'];
+    if (!validTypes.includes(args.feedbackType)) {
+      throw new ValidationError(
+        `feedbackType must be one of: ${validTypes.join(', ')}`,
+        'feedbackType',
+      );
+    }
+  }
+
+  // Validate options
+  if (args.options) {
+    validateOptions(args.options);
+  }
+
+  logger.debug('Code feedback arguments validated successfully', {
+    provider: args.provider,
+    language: args.language,
+    codeLength: args.code.length,
+    hasOptions: !!args.options,
+  });
+
+  return {
+    code: args.code.trim(),
+    language: args.language.trim(),
+    provider: args.provider.trim(),
+    model: args.model ? args.model.trim() : undefined,
+    feedbackType: args.feedbackType || 'general',
+    options: args.options || {},
+  };
+}

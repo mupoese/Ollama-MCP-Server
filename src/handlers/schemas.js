@@ -2017,6 +2017,62 @@ export const TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'ai_code_feedback',
+    description: 'Get AI-powered code feedback using various model providers (ollama, github, claude, chatgpt)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description: 'The code to analyze and get feedback on',
+          minLength: 1,
+        },
+        language: {
+          type: 'string',
+          description: 'Programming language of the code (e.g., javascript, python, java)',
+          minLength: 1,
+        },
+        provider: {
+          type: 'string',
+          description: 'AI model provider to use for feedback',
+          enum: ['ollama', 'github', 'claude', 'chatgpt'],
+          default: 'ollama',
+        },
+        model: {
+          type: 'string',
+          description: 'Specific model name (required for ollama provider)',
+        },
+        feedbackType: {
+          type: 'string',
+          description: 'Type of feedback to focus on',
+          enum: ['general', 'performance', 'security', 'style', 'bugs'],
+          default: 'general',
+        },
+        options: {
+          type: 'object',
+          description: 'Optional parameters for the model',
+          properties: {
+            temperature: {
+              type: 'number',
+              description: 'Controls randomness in generation (0.0 to 2.0)',
+              minimum: 0.0,
+              maximum: 2.0,
+            },
+            maxTokens: {
+              type: 'integer',
+              description: 'Maximum number of tokens in response',
+              minimum: 1,
+              maximum: 4000,
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+      required: ['code', 'language', 'provider'],
+      additionalProperties: false,
+    },
+  },
 ];
 
 /**
