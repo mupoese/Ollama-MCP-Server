@@ -76,7 +76,7 @@ describe('Tool Schemas', () => {
     test('should return array of all tool names', () => {
       const names = getToolNames();
       expect(Array.isArray(names)).toBe(true);
-      expect(names.length).toBe(14); // Updated to reflect all new tools
+      expect(names.length).toBe(73); // Updated to reflect all new tools including GitHub and Browser tools
       expect(names).toContain('ollama_list_models');
       expect(names).toContain('ollama_chat');
       expect(names).toContain('ollama_generate');
@@ -92,6 +92,15 @@ describe('Tool Schemas', () => {
       expect(names).toContain('audit_security');
       expect(names).toContain('server_status');
       expect(names).toContain('validate_config');
+      // GitHub MCP Tools
+      expect(names).toContain('get_commit');
+      expect(names).toContain('get_pull_request');
+      expect(names).toContain('list_issues');
+      expect(names).toContain('search_code');
+      // Browser Tools
+      expect(names).toContain('browser_navigate');
+      expect(names).toContain('browser_click');
+      expect(names).toContain('browser_take_screenshot');
     });
   });
 
@@ -101,6 +110,14 @@ describe('Tool Schemas', () => {
       expect(isValidToolName('ollama_chat')).toBe(true);
       expect(isValidToolName('ollama_generate')).toBe(true);
       expect(isValidToolName('ollama_pull_model')).toBe(true);
+      // GitHub tools
+      expect(isValidToolName('get_commit')).toBe(true);
+      expect(isValidToolName('list_pull_requests')).toBe(true);
+      expect(isValidToolName('search_repositories')).toBe(true);
+      // Browser tools
+      expect(isValidToolName('browser_navigate')).toBe(true);
+      expect(isValidToolName('browser_click')).toBe(true);
+      expect(isValidToolName('browser_take_screenshot')).toBe(true);
     });
 
     test('should return false for invalid tool names', () => {

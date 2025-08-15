@@ -37,6 +37,67 @@ import {
   handleAuditSecurity,
   handleServerStatus,
   handleValidateConfig,
+  // GitHub MCP Tools
+  handleDownloadWorkflowRunArtifact,
+  handleGetCodeScanningAlert,
+  handleGetCommit,
+  handleGetFileContents,
+  handleGetIssue,
+  handleGetIssueComments,
+  handleGetJobLogs,
+  handleGetPullRequest,
+  handleGetPullRequestComments,
+  handleGetPullRequestDiff,
+  handleGetPullRequestFiles,
+  handleGetPullRequestReviews,
+  handleGetPullRequestStatus,
+  handleGetSecretScanningAlert,
+  handleGetTag,
+  handleGetWorkflowRun,
+  handleGetWorkflowRunLogs,
+  handleGetWorkflowRunUsage,
+  handleListBranches,
+  handleListCodeScanningAlerts,
+  handleListCommits,
+  handleListIssues,
+  handleListPullRequests,
+  handleListSecretScanningAlerts,
+  handleListSubIssues,
+  handleListTags,
+  handleListWorkflowJobs,
+  handleListWorkflowRunArtifacts,
+  handleListWorkflowRuns,
+  handleListWorkflows,
+  handleSearchCode,
+  handleSearchIssues,
+  handleSearchPullRequests,
+  handleSearchRepositories,
+  handleSearchUsers,
+  // Browser Automation Tools
+  handleBrowserClose,
+  handleBrowserResize,
+  handleBrowserConsoleMessages,
+  handleBrowserHandleDialog,
+  handleBrowserEvaluate,
+  handleBrowserFileUpload,
+  handleBrowserInstall,
+  handleBrowserPressKey,
+  handleBrowserType,
+  handleBrowserNavigate,
+  handleBrowserNavigateBack,
+  handleBrowserNavigateForward,
+  handleBrowserNetworkRequests,
+  handleBrowserTakeScreenshot,
+  handleBrowserSnapshot,
+  handleBrowserClick,
+  handleBrowserDrag,
+  handleBrowserHover,
+  handleBrowserSelectOption,
+  handleBrowserTabList,
+  handleBrowserTabNew,
+  handleBrowserTabSelect,
+  handleBrowserTabClose,
+  handleBrowserWaitFor,
 } from './handlers/tools.js';
 
 // AI Core modules for LAW-001 compliance
@@ -266,6 +327,244 @@ class OllamaMCPServer {
 
         case 'validate_config':
           result = await handleValidateConfig(args);
+          break;
+
+        // GitHub MCP Tools
+        case 'download_workflow_run_artifact':
+          result = await handleDownloadWorkflowRunArtifact(args);
+          break;
+
+        case 'get_code_scanning_alert':
+          result = await handleGetCodeScanningAlert(args);
+          break;
+
+        case 'get_commit':
+          result = await handleGetCommit(args);
+          break;
+
+        case 'get_file_contents':
+          result = await handleGetFileContents(args);
+          break;
+
+        case 'get_issue':
+          result = await handleGetIssue(args);
+          break;
+
+        case 'get_issue_comments':
+          result = await handleGetIssueComments(args);
+          break;
+
+        case 'get_job_logs':
+          result = await handleGetJobLogs(args);
+          break;
+
+        case 'get_pull_request':
+          result = await handleGetPullRequest(args);
+          break;
+
+        case 'get_pull_request_comments':
+          result = await handleGetPullRequestComments(args);
+          break;
+
+        case 'get_pull_request_diff':
+          result = await handleGetPullRequestDiff(args);
+          break;
+
+        case 'get_pull_request_files':
+          result = await handleGetPullRequestFiles(args);
+          break;
+
+        case 'get_pull_request_reviews':
+          result = await handleGetPullRequestReviews(args);
+          break;
+
+        case 'get_pull_request_status':
+          result = await handleGetPullRequestStatus(args);
+          break;
+
+        case 'get_secret_scanning_alert':
+          result = await handleGetSecretScanningAlert(args);
+          break;
+
+        case 'get_tag':
+          result = await handleGetTag(args);
+          break;
+
+        case 'get_workflow_run':
+          result = await handleGetWorkflowRun(args);
+          break;
+
+        case 'get_workflow_run_logs':
+          result = await handleGetWorkflowRunLogs(args);
+          break;
+
+        case 'get_workflow_run_usage':
+          result = await handleGetWorkflowRunUsage(args);
+          break;
+
+        case 'list_branches':
+          result = await handleListBranches(args);
+          break;
+
+        case 'list_code_scanning_alerts':
+          result = await handleListCodeScanningAlerts(args);
+          break;
+
+        case 'list_commits':
+          result = await handleListCommits(args);
+          break;
+
+        case 'list_issues':
+          result = await handleListIssues(args);
+          break;
+
+        case 'list_pull_requests':
+          result = await handleListPullRequests(args);
+          break;
+
+        case 'list_secret_scanning_alerts':
+          result = await handleListSecretScanningAlerts(args);
+          break;
+
+        case 'list_sub_issues':
+          result = await handleListSubIssues(args);
+          break;
+
+        case 'list_tags':
+          result = await handleListTags(args);
+          break;
+
+        case 'list_workflow_jobs':
+          result = await handleListWorkflowJobs(args);
+          break;
+
+        case 'list_workflow_run_artifacts':
+          result = await handleListWorkflowRunArtifacts(args);
+          break;
+
+        case 'list_workflow_runs':
+          result = await handleListWorkflowRuns(args);
+          break;
+
+        case 'list_workflows':
+          result = await handleListWorkflows(args);
+          break;
+
+        case 'search_code':
+          result = await handleSearchCode(args);
+          break;
+
+        case 'search_issues':
+          result = await handleSearchIssues(args);
+          break;
+
+        case 'search_pull_requests':
+          result = await handleSearchPullRequests(args);
+          break;
+
+        case 'search_repositories':
+          result = await handleSearchRepositories(args);
+          break;
+
+        case 'search_users':
+          result = await handleSearchUsers(args);
+          break;
+
+        // Browser Automation Tools
+        case 'browser_close':
+          result = await handleBrowserClose(args);
+          break;
+
+        case 'browser_resize':
+          result = await handleBrowserResize(args);
+          break;
+
+        case 'browser_console_messages':
+          result = await handleBrowserConsoleMessages(args);
+          break;
+
+        case 'browser_handle_dialog':
+          result = await handleBrowserHandleDialog(args);
+          break;
+
+        case 'browser_evaluate':
+          result = await handleBrowserEvaluate(args);
+          break;
+
+        case 'browser_file_upload':
+          result = await handleBrowserFileUpload(args);
+          break;
+
+        case 'browser_install':
+          result = await handleBrowserInstall(args);
+          break;
+
+        case 'browser_press_key':
+          result = await handleBrowserPressKey(args);
+          break;
+
+        case 'browser_type':
+          result = await handleBrowserType(args);
+          break;
+
+        case 'browser_navigate':
+          result = await handleBrowserNavigate(args);
+          break;
+
+        case 'browser_navigate_back':
+          result = await handleBrowserNavigateBack(args);
+          break;
+
+        case 'browser_navigate_forward':
+          result = await handleBrowserNavigateForward(args);
+          break;
+
+        case 'browser_network_requests':
+          result = await handleBrowserNetworkRequests(args);
+          break;
+
+        case 'browser_take_screenshot':
+          result = await handleBrowserTakeScreenshot(args);
+          break;
+
+        case 'browser_snapshot':
+          result = await handleBrowserSnapshot(args);
+          break;
+
+        case 'browser_click':
+          result = await handleBrowserClick(args);
+          break;
+
+        case 'browser_drag':
+          result = await handleBrowserDrag(args);
+          break;
+
+        case 'browser_hover':
+          result = await handleBrowserHover(args);
+          break;
+
+        case 'browser_select_option':
+          result = await handleBrowserSelectOption(args);
+          break;
+
+        case 'browser_tab_list':
+          result = await handleBrowserTabList(args);
+          break;
+
+        case 'browser_tab_new':
+          result = await handleBrowserTabNew(args);
+          break;
+
+        case 'browser_tab_select':
+          result = await handleBrowserTabSelect(args);
+          break;
+
+        case 'browser_tab_close':
+          result = await handleBrowserTabClose(args);
+          break;
+
+        case 'browser_wait_for':
+          result = await handleBrowserWaitFor(args);
           break;
 
         default:
