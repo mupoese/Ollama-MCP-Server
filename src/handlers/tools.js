@@ -10,6 +10,7 @@ import {
   validateChatArgs,
   validateGenerateArgs,
   validatePullModelArgs,
+  validateCodeFeedbackArgs,
   ValidationError,
 } from '../utils/validation.js';
 import { exec } from 'child_process';
@@ -237,6 +238,142 @@ export async function handlePullModel(args) {
     throw new McpError(
       ErrorCode.InternalError,
       `Model pull failed: ${error.message}`,
+    );
+  }
+}
+
+/**
+ * Get AI-powered code feedback from various providers
+ * @param {Object} args - Code feedback arguments
+ * @returns {Promise<Object>} MCP response with code feedback
+ */
+export async function handleCodeFeedback(args) {
+  try {
+    logger.debug('Starting code feedback request');
+
+    const validatedArgs = validateCodeFeedbackArgs(args);
+    const { code, language, provider, model, feedbackType, options } = validatedArgs;
+
+    logger.info('Processing code feedback request', {
+      provider,
+      language,
+      feedbackType,
+      codeLength: code.length,
+      hasModel: !!model,
+    });
+
+    let feedback = '';
+
+    // Create feedback prompt based on feedback type
+    const feedbackPrompts = {
+      general: `Please review this ${language} code and provide general feedback on its quality, readability, and best practices:`,
+      performance: `Please analyze this ${language} code for performance issues and optimization opportunities:`,
+      security: `Please review this ${language} code for security vulnerabilities and potential security issues:`,
+      style: `Please review this ${language} code for coding style, formatting, and conventions:`,
+      bugs: `Please analyze this ${language} code for potential bugs, errors, and logic issues:`,
+    };
+
+    const promptText = `${feedbackPrompts[feedbackType]}
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Please provide:
+1. Summary of findings
+2. Specific issues (if any)
+3. Recommendations for improvement
+4. Best practices suggestions
+
+Focus on actionable feedback that helps improve code quality.`;
+
+    // Route to appropriate provider
+    switch (provider) {
+    case 'ollama':
+      if (!model) {
+        throw new ValidationError('model is required for ollama provider', 'model');
+      }
+
+      // Use existing ollama chat functionality
+      {
+        const chatArgs = {
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful code reviewer. Provide constructive, actionable feedback on code quality, security, performance, and best practices.',
+            },
+            {
+              role: 'user',
+              content: promptText,
+            },
+          ],
+          options,
+        };
+
+        const chatResponse = await handleChat(chatArgs);
+        feedback = chatResponse.content[0].text;
+        break;
+      }
+
+    case 'github':
+    case 'claude':
+    case 'chatgpt':
+    {
+      // For now, these providers are not implemented
+      // In a real implementation, you would integrate with their APIs
+      feedback = `Code feedback using ${provider} provider is not yet implemented. 
+      
+However, here's a basic analysis of your ${language} code:
+
+**Code Analysis:**
+- Language: ${language}
+- Code length: ${code.length} characters
+- Feedback type requested: ${feedbackType}
+
+**Next Steps:**
+1. Use the 'ollama' provider for immediate feedback
+2. Ensure you have appropriate models installed locally
+3. Consider implementing ${provider} API integration for enhanced feedback
+
+**Basic Observations:**
+- Code appears to be ${language} syntax
+- Feedback focus: ${feedbackType}
+- Consider running with ollama provider for detailed analysis`;
+      break;
+    }
+
+    default:
+      throw new ValidationError(`Unsupported provider: ${provider}`, 'provider');
+    }
+
+    logger.info('Code feedback completed successfully', {
+      provider,
+      feedbackLength: feedback.length,
+    });
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: feedback,
+        },
+      ],
+    };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      logger.warn('Code feedback validation failed', { error: error.message, field: error.field });
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Invalid code feedback parameters: ${error.message}`,
+      );
+    }
+
+    logger.error('Code feedback request failed', error);
+
+    throw new McpError(
+      ErrorCode.InternalError,
+      `Code feedback failed: ${error.message}`,
     );
   }
 }
