@@ -1,7 +1,7 @@
 # Ollama-MCP-Server
 
 **Author/Maintainer:** [Mupoese](https://github.com/mupoese)  
-**Version:** v1.0.0  
+**Version:** v1.0.1  
 **License:** GNU General Public License v2.0  
 **AI Compliance:** LAW-001 (Comprehensive AI Learning Cycle)
 
@@ -87,6 +87,13 @@ This project offers maximum flexibility, privacy, open source usage, and profess
 
 ## Changelog
 
+### v1.0.1
+
+- **Enhanced Documentation**: Added comprehensive MCP protocol communication documentation
+- **JSON-RPC Functions**: Detailed documentation of all available JSON-RPC functions and their usage
+- **Port Communication**: Documented port usage (11434 for Ollama, stdin/stdout for MCP)
+- **Architecture Documentation**: Added communication flow diagrams and architecture details
+
 ### v1.0.0
 
 - First stable release
@@ -130,6 +137,161 @@ This server implements the **Model Context Protocol (MCP)**, which uses JSON-RPC
 
 - ✅ **Correct**: MCP server for Claude Desktop integration
 - ❌ **Incorrect**: HTTP REST API server
+
+---
+
+## 🔌 MCP Protocol Communication Architecture
+
+### Communication Flow Overview
+
+The Ollama MCP Server acts as a bridge between MCP clients (like Claude Desktop) and Ollama API, implementing a dual-protocol architecture:
+
+```
+┌─────────────────┐    JSON-RPC     ┌─────────────────┐    HTTP REST    ┌─────────────────┐
+│   MCP Client    │◄─stdin/stdout──►│  Ollama-MCP     │◄──port 11434───►│   Ollama API    │
+│ (Claude Desktop)│                 │     Server      │                 │   (LLM Models)  │
+└─────────────────┘                 └─────────────────┘                 └─────────────────┘
+```
+
+### Port Usage and Communication Protocols
+
+| Component | Protocol | Port/Interface | Purpose |
+|-----------|----------|---------------|----------|
+| **MCP Client ↔ MCP Server** | JSON-RPC | stdin/stdout | Model Context Protocol communication |
+| **MCP Server ↔ Ollama** | HTTP REST | 11434 | Ollama API calls for model operations |
+
+### JSON-RPC Functions Documentation
+
+The server implements the Model Context Protocol (MCP) specification with the following JSON-RPC methods:
+
+#### Core MCP Methods
+
+**1. `listTools`**
+- **Purpose**: Returns all available MCP tools
+- **Request**: No parameters required
+- **Response**: Array of tool definitions with schemas
+- **Example**:
+  ```json
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/list",
+    "params": {}
+  }
+  ```
+
+**2. `callTool`**
+- **Purpose**: Executes a specific tool with provided arguments
+- **Request**: Tool name and arguments object
+- **Response**: Tool execution result
+- **Example**:
+  ```json
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "ollama_chat",
+      "arguments": {
+        "model": "llama2",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }
+    }
+  }
+  ```
+
+### Available MCP Tools
+
+#### Ollama Core Tools
+
+| Tool Name | Purpose | Ollama API Endpoint |
+|-----------|---------|-------------------|
+| `ollama_list_models` | List available models | `GET /api/tags` |
+| `ollama_chat` | Chat with model | `POST /api/chat` |
+| `ollama_generate` | Generate text | `POST /api/generate` |
+| `ollama_pull_model` | Download model | `POST /api/pull` |
+
+#### Development Tools
+
+| Tool Name | Purpose | Description |
+|-----------|---------|-------------|
+| `code_feedback` | Code analysis | AI-powered code review and feedback |
+| `terminal_execute` | Command execution | Execute shell commands with safety checks |
+| `file_read` | File operations | Read file contents |
+| `file_write` | File operations | Write file contents |
+| `file_list` | File operations | List directory contents |
+
+#### Testing & Quality Tools
+
+| Tool Name | Purpose | Description |
+|-----------|---------|-------------|
+| `test_run` | Test execution | Run project tests |
+| `test_discover` | Test discovery | Find test files |
+| `lint_check` | Code linting | Run code quality checks |
+| `audit_security` | Security audit | Security vulnerability scanning |
+
+#### Server Management Tools
+
+| Tool Name | Purpose | Description |
+|-----------|---------|-------------|
+| `server_status` | Status check | Get server health status |
+| `validate_config` | Config validation | Validate server configuration |
+
+### Communication Protocol Details
+
+#### MCP Protocol (Client ↔ Server)
+
+**Transport**: stdio (stdin/stdout)  
+**Protocol**: JSON-RPC 2.0  
+**Message Format**:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "unique-request-id",
+  "method": "method-name",
+  "params": { /* method parameters */ }
+}
+```
+
+**Key Features**:
+- Bidirectional communication over stdio
+- No HTTP headers or REST endpoints
+- All logging must go to stderr (not stdout) to avoid protocol interference
+- `SILENCE_STARTUP=true` prevents stdout pollution
+
+#### HTTP Protocol (Server ↔ Ollama)
+
+**Transport**: HTTP/HTTPS  
+**Default Endpoint**: `http://host.docker.internal:11434`  
+**Protocol**: REST API  
+**Authentication**: None (local API)  
+
+**Request Configuration**:
+- Content-Type: `application/json`
+- Timeout: 30 seconds (configurable)
+- Retry Logic: 3 attempts with exponential backoff
+- Error Handling: Automatic retry for 5xx errors, timeouts, and connection issues
+
+### Environment Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OLLAMA_API` | `http://host.docker.internal:11434` | Ollama API endpoint |
+| `SILENCE_STARTUP` | `false` | Suppress startup logs for MCP compatibility |
+| `REQUEST_TIMEOUT` | `30000` | HTTP request timeout (ms) |
+| `MAX_RETRIES` | `3` | HTTP request retry attempts |
+
+### Error Handling
+
+**MCP Protocol Errors**:
+- Invalid tool names return `MethodNotFound` error
+- Validation failures return `InvalidParams` error
+- Internal errors return `InternalError` with details
+
+**HTTP Protocol Errors**:
+- Connection failures trigger automatic retry
+- 4xx errors (client errors) are not retried
+- 5xx errors (server errors) trigger retry with backoff
 
 ---
 

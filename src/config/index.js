@@ -11,7 +11,7 @@ const DEFAULT_CONFIG = {
   SILENCE_STARTUP: false,
   DEBUG: false,
   SERVER_NAME: 'ollama-mcp-server',
-  SERVER_VERSION: '1.0.0',
+  SERVER_VERSION: '1.0.1',
   REQUEST_TIMEOUT: 30000, // 30 seconds
   MAX_RETRIES: 3,
 };
