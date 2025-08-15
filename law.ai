@@ -11,12 +11,13 @@ law.ai:
   Commit: AUTO-COMMIT
   
 Rule:
-  Elke AI-agent MOET bij detectie van een oorzaak (cause), zonder vertraging een 8-step learning cycle uitvoeren:
+  Elke AI-agent MOET bij detectie van een oorzaak (cause), zonder vertraging een 6-step learning cycle uitvoeren:
     1. Input verzamelen en structureren als JSON-schema 'structuur.ai'
     2. Een actie bepalen conform geldende logica (`laws`, `ruleset`, `codebase`) en dit samevatten in de json-schema
     3. De actie uitvoeren en directe reactie (reaction) registreren in de json-schema
-    4. Output en effect evalueren t.o.v. verwachte uitkomst
-    5. Automatisch een snapshot genereren met:
+    4. Reaction registreren in het systeem
+    5. Output en effect evalueren t.o.v. verwachte uitkomst
+    6. Automatisch een snapshot genereren en opslaan met:
         - context
         - input
         - action
@@ -26,12 +27,13 @@ Rule:
         - deviation (indien afwijking)
         - ai_signature
         - clean files not used or deviated
-    6. Deze snapshot opslaan als `snapshot.ai` in het werkpad
-    7. Bevindingen worden automatisch geladen bij start van volgende cyclus (memory.load_snapshots=True)
-    8. Indien afwijking gevonden en learning-mode is actief:
-        - Nieuwe suggestie loggen in `proposed_logic_update.ai`
-        - Herhaling detecteren via `pattern_detector`
-        - Escalatie starten bij systematische afwijking (> threshold)
+
+Additional behaviors:
+  - Bevindingen worden automatisch geladen bij start van volgende cyclus (memory.load_snapshots=True)
+  - Indien afwijking gevonden en learning-mode is actief:
+    - Nieuwe suggestie loggen in `proposed_logic_update.ai`
+    - Herhaling detecteren via `pattern_detector`
+    - Escalatie starten bij systematische afwijking (> threshold)
 
 Learning:
   Enabled: TRUE
