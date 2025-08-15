@@ -1,0 +1,60 @@
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    reviewers:
+      - "mupoese"
+    assignees:
+      - "mupoese"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    open-pull-requests-limit: 10
+    groups:
+      production-dependencies:
+        patterns:
+          - "@modelcontextprotocol/*"
+          - "axios"
+          - "glob"
+      development-dependencies:
+        patterns:
+          - "@eslint/*"
+          - "eslint*"
+          - "jest*"
+          - "@jest/*"
+
+  # Enable version updates for Docker base images
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    reviewers:
+      - "mupoese"
+    assignees:
+      - "mupoese"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    reviewers:
+      - "mupoese"
+    assignees:
+      - "mupoese"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

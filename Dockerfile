@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # v1.0.0
 LABEL maintainer="mupoese <info@mupoese.nl>" \
