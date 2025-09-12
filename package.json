@@ -15,7 +15,7 @@
     "validate": "npm run lint && npm run test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@modelcontextprotocol/sdk": "^1.17.5",
     "axios": "^1.6.0",
     "glob": "^11.0.3"
   },
