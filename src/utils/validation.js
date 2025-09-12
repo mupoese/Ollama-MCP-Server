@@ -6,13 +6,51 @@
 import { logger } from './logger.js';
 
 /**
- * Validation error class
+ * Base validation error class
  */
 export class ValidationError extends Error {
-  constructor(message, field = null) {
+  constructor(message, field = null, value = null) {
     super(message);
     this.name = 'ValidationError';
     this.field = field;
+    this.value = value;
+    Error.captureStackTrace(this, ValidationError);
+  }
+}
+
+/**
+ * Required field validation error
+ */
+export class RequiredFieldError extends ValidationError {
+  constructor(fieldName) {
+    super(`${fieldName} is required and cannot be empty`, fieldName);
+    this.name = 'RequiredFieldError';
+  }
+}
+
+/**
+ * Invalid type validation error
+ */
+export class InvalidTypeError extends ValidationError {
+  constructor(fieldName, expectedType, actualType) {
+    super(`${fieldName} must be a ${expectedType}, received ${actualType}`, fieldName);
+    this.name = 'InvalidTypeError';
+    this.expectedType = expectedType;
+    this.actualType = actualType;
+  }
+}
+
+/**
+ * Invalid value validation error
+ */
+export class InvalidValueError extends ValidationError {
+  constructor(fieldName, value, allowedValues = null) {
+    const message = allowedValues
+      ? `${fieldName} has invalid value "${value}". Allowed values: ${allowedValues.join(', ')}`
+      : `${fieldName} has invalid value "${value}"`;
+    super(message, fieldName, value);
+    this.name = 'InvalidValueError';
+    this.allowedValues = allowedValues;
   }
 }
 
@@ -23,12 +61,16 @@ export class ValidationError extends Error {
  * @throws {ValidationError} If validation fails
  */
 export function validateRequiredString(value, fieldName) {
+  if (value === null || value === undefined) {
+    throw new RequiredFieldError(fieldName);
+  }
+
   if (typeof value !== 'string') {
-    throw new ValidationError(`${fieldName} must be a string`, fieldName);
+    throw new InvalidTypeError(fieldName, 'string', typeof value);
   }
 
   if (value.trim().length === 0) {
-    throw new ValidationError(`${fieldName} cannot be empty`, fieldName);
+    throw new RequiredFieldError(fieldName);
   }
 }
 
@@ -39,12 +81,16 @@ export function validateRequiredString(value, fieldName) {
  * @throws {ValidationError} If validation fails
  */
 export function validateRequiredArray(value, fieldName) {
+  if (value === null || value === undefined) {
+    throw new RequiredFieldError(fieldName);
+  }
+
   if (!Array.isArray(value)) {
-    throw new ValidationError(`${fieldName} must be an array`, fieldName);
+    throw new InvalidTypeError(fieldName, 'array', typeof value);
   }
 
   if (value.length === 0) {
-    throw new ValidationError(`${fieldName} cannot be empty`, fieldName);
+    throw new RequiredFieldError(fieldName);
   }
 }
 
@@ -59,27 +105,26 @@ export function validateChatMessages(messages) {
   const validRoles = ['system', 'user', 'assistant'];
 
   messages.forEach((message, index) => {
+    const messageField = `messages[${index}]`;
+
     if (typeof message !== 'object' || message === null) {
-      throw new ValidationError(`Message at index ${index} must be an object`, 'messages');
+      throw new InvalidTypeError(messageField, 'object', typeof message);
     }
 
     if (!message.role) {
-      throw new ValidationError(`Message at index ${index} must have a role`, 'messages');
+      throw new RequiredFieldError(`${messageField}.role`);
     }
 
     if (!validRoles.includes(message.role)) {
-      throw new ValidationError(
-        `Message at index ${index} has invalid role. Must be one of: ${validRoles.join(', ')}`,
-        'messages',
-      );
+      throw new InvalidValueError(`${messageField}.role`, message.role, validRoles);
     }
 
     if (typeof message.content !== 'string') {
-      throw new ValidationError(`Message at index ${index} content must be a string`, 'messages');
+      throw new InvalidTypeError(`${messageField}.content`, 'string', typeof message.content);
     }
 
     if (message.content.trim().length === 0) {
-      throw new ValidationError(`Message at index ${index} content cannot be empty`, 'messages');
+      throw new RequiredFieldError(`${messageField}.content`);
     }
   });
 }
@@ -95,34 +140,34 @@ export function validateOptions(options) {
   }
 
   if (typeof options !== 'object') {
-    throw new ValidationError('options must be an object', 'options');
+    throw new InvalidTypeError('options', 'object', typeof options);
   }
 
   // Validate specific option fields if present
   if (options.temperature !== undefined) {
     if (typeof options.temperature !== 'number') {
-      throw new ValidationError('temperature must be a number', 'options.temperature');
+      throw new InvalidTypeError('options.temperature', 'number', typeof options.temperature);
     }
     if (options.temperature < 0 || options.temperature > 2) {
-      throw new ValidationError('temperature must be between 0 and 2', 'options.temperature');
+      throw new InvalidValueError('options.temperature', options.temperature, ['0-2 range']);
     }
   }
 
   if (options.top_p !== undefined) {
     if (typeof options.top_p !== 'number') {
-      throw new ValidationError('top_p must be a number', 'options.top_p');
+      throw new InvalidTypeError('options.top_p', 'number', typeof options.top_p);
     }
     if (options.top_p < 0 || options.top_p > 1) {
-      throw new ValidationError('top_p must be between 0 and 1', 'options.top_p');
+      throw new InvalidValueError('options.top_p', options.top_p, ['0-1 range']);
     }
   }
 
   if (options.top_k !== undefined) {
     if (typeof options.top_k !== 'number' || !Number.isInteger(options.top_k)) {
-      throw new ValidationError('top_k must be an integer', 'options.top_k');
+      throw new InvalidTypeError('options.top_k', 'integer', typeof options.top_k);
     }
     if (options.top_k < 1) {
-      throw new ValidationError('top_k must be at least 1', 'options.top_k');
+      throw new InvalidValueError('options.top_k', options.top_k, ['minimum value: 1']);
     }
   }
 }
@@ -222,7 +267,7 @@ export function validatePullModelArgs(args) {
  */
 export function validateCodeFeedbackArgs(args) {
   if (!args || typeof args !== 'object') {
-    throw new ValidationError('Arguments must be an object');
+    throw new InvalidTypeError('arguments', 'object', typeof args);
   }
 
   validateRequiredString(args.code, 'code');
@@ -232,10 +277,7 @@ export function validateCodeFeedbackArgs(args) {
   // Validate provider
   const validProviders = ['ollama', 'github', 'claude', 'chatgpt'];
   if (!validProviders.includes(args.provider)) {
-    throw new ValidationError(
-      `provider must be one of: ${validProviders.join(', ')}`,
-      'provider',
-    );
+    throw new InvalidValueError('provider', args.provider, validProviders);
   }
 
   // For ollama provider, model is required
@@ -247,16 +289,23 @@ export function validateCodeFeedbackArgs(args) {
   if (args.feedbackType) {
     const validTypes = ['general', 'performance', 'security', 'style', 'bugs'];
     if (!validTypes.includes(args.feedbackType)) {
-      throw new ValidationError(
-        `feedbackType must be one of: ${validTypes.join(', ')}`,
-        'feedbackType',
-      );
+      throw new InvalidValueError('feedbackType', args.feedbackType, validTypes);
     }
   }
 
-  // Validate options
+  // Validate options if provided
   if (args.options) {
     validateOptions(args.options);
+  }
+
+  // Additional validation for code length (prevent extremely large inputs)
+  if (args.code.length > 50000) { // 50KB limit
+    throw new InvalidValueError('code', 'length', ['maximum 50,000 characters']);
+  }
+
+  // Validate language format (basic check)
+  if (!/^[a-zA-Z0-9+_-]+$/.test(args.language)) {
+    throw new InvalidValueError('language', args.language, ['alphanumeric characters, +, _, - only']);
   }
 
   logger.debug('Code feedback arguments validated successfully', {

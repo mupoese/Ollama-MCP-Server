@@ -30,15 +30,15 @@ describe('Validation', () => {
     });
 
     test('should throw for non-string', () => {
-      expect(() => validateRequiredString(123, 'field')).toThrow('field must be a string');
+      expect(() => validateRequiredString(123, 'field')).toThrow('field must be a string, received number');
     });
 
     test('should throw for empty string', () => {
-      expect(() => validateRequiredString('', 'field')).toThrow('field cannot be empty');
+      expect(() => validateRequiredString('', 'field')).toThrow('field is required and cannot be empty');
     });
 
     test('should throw for whitespace-only string', () => {
-      expect(() => validateRequiredString('   ', 'field')).toThrow('field cannot be empty');
+      expect(() => validateRequiredString('   ', 'field')).toThrow('field is required and cannot be empty');
     });
   });
 
@@ -48,11 +48,11 @@ describe('Validation', () => {
     });
 
     test('should throw for non-array', () => {
-      expect(() => validateRequiredArray('not array', 'field')).toThrow('field must be an array');
+      expect(() => validateRequiredArray('not array', 'field')).toThrow('field must be a array, received string');
     });
 
     test('should throw for empty array', () => {
-      expect(() => validateRequiredArray([], 'field')).toThrow('field cannot be empty');
+      expect(() => validateRequiredArray([], 'field')).toThrow('field is required and cannot be empty');
     });
   });
 
@@ -67,27 +67,27 @@ describe('Validation', () => {
 
     test('should throw for invalid message object', () => {
       const messages = ['invalid'];
-      expect(() => validateChatMessages(messages)).toThrow('Message at index 0 must be an object');
+      expect(() => validateChatMessages(messages)).toThrow('messages[0] must be a object, received string');
     });
 
     test('should throw for missing role', () => {
       const messages = [{ content: 'Hello' }];
-      expect(() => validateChatMessages(messages)).toThrow('Message at index 0 must have a role');
+      expect(() => validateChatMessages(messages)).toThrow('messages[0].role is required and cannot be empty');
     });
 
     test('should throw for invalid role', () => {
       const messages = [{ role: 'invalid', content: 'Hello' }];
-      expect(() => validateChatMessages(messages)).toThrow('invalid role');
+      expect(() => validateChatMessages(messages)).toThrow('messages[0].role has invalid value "invalid". Allowed values: system, user, assistant');
     });
 
     test('should throw for non-string content', () => {
       const messages = [{ role: 'user', content: 123 }];
-      expect(() => validateChatMessages(messages)).toThrow('content must be a string');
+      expect(() => validateChatMessages(messages)).toThrow('messages[0].content must be a string, received number');
     });
 
     test('should throw for empty content', () => {
       const messages = [{ role: 'user', content: '' }];
-      expect(() => validateChatMessages(messages)).toThrow('content cannot be empty');
+      expect(() => validateChatMessages(messages)).toThrow('messages[0].content is required and cannot be empty');
     });
   });
 
@@ -106,19 +106,19 @@ describe('Validation', () => {
     });
 
     test('should throw for non-object options', () => {
-      expect(() => validateOptions('invalid')).toThrow('options must be an object');
+      expect(() => validateOptions('invalid')).toThrow('options must be a object, received string');
     });
 
     test('should throw for invalid temperature', () => {
-      expect(() => validateOptions({ temperature: 3 })).toThrow('temperature must be between 0 and 2');
+      expect(() => validateOptions({ temperature: 3 })).toThrow('options.temperature has invalid value "3". Allowed values: 0-2 range');
     });
 
     test('should throw for invalid top_p', () => {
-      expect(() => validateOptions({ top_p: 1.5 })).toThrow('top_p must be between 0 and 1');
+      expect(() => validateOptions({ top_p: 1.5 })).toThrow('options.top_p has invalid value "1.5". Allowed values: 0-1 range');
     });
 
     test('should throw for invalid top_k', () => {
-      expect(() => validateOptions({ top_k: 0 })).toThrow('top_k must be at least 1');
+      expect(() => validateOptions({ top_k: 0 })).toThrow('options.top_k has invalid value "0". Allowed values: minimum value: 1');
     });
   });
 
@@ -139,7 +139,7 @@ describe('Validation', () => {
       const args = {
         messages: [{ role: 'user', content: 'Hello' }],
       };
-      expect(() => validateChatArgs(args)).toThrow('model must be a string');
+      expect(() => validateChatArgs(args)).toThrow('model is required and cannot be empty');
     });
   });
 
@@ -160,7 +160,7 @@ describe('Validation', () => {
       const args = {
         model: 'llama2',
       };
-      expect(() => validateGenerateArgs(args)).toThrow('prompt must be a string');
+      expect(() => validateGenerateArgs(args)).toThrow('prompt is required and cannot be empty');
     });
   });
 
@@ -178,7 +178,7 @@ describe('Validation', () => {
 
     test('should throw for missing name', () => {
       const args = {};
-      expect(() => validatePullModelArgs(args)).toThrow('name must be a string');
+      expect(() => validatePullModelArgs(args)).toThrow('name is required and cannot be empty');
     });
   });
 
@@ -204,7 +204,7 @@ describe('Validation', () => {
         language: 'javascript',
         provider: 'ollama',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('code must be a string');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('code is required and cannot be empty');
     });
 
     test('should throw for missing language', () => {
@@ -212,7 +212,7 @@ describe('Validation', () => {
         code: 'test code',
         provider: 'ollama',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('language must be a string');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('language is required and cannot be empty');
     });
 
     test('should throw for missing provider', () => {
@@ -220,7 +220,7 @@ describe('Validation', () => {
         code: 'test code',
         language: 'javascript',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider must be a string');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider is required and cannot be empty');
     });
 
     test('should throw for invalid provider', () => {
@@ -229,7 +229,7 @@ describe('Validation', () => {
         language: 'javascript',
         provider: 'invalid-provider',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider must be one of:');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('provider has invalid value "invalid-provider". Allowed values: ollama, github, claude, chatgpt');
     });
 
     test('should throw for missing model when using ollama provider', () => {
@@ -238,7 +238,7 @@ describe('Validation', () => {
         language: 'javascript',
         provider: 'ollama',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('model must be a string');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('model is required and cannot be empty');
     });
 
     test('should not require model for non-ollama providers', () => {
@@ -268,7 +268,7 @@ describe('Validation', () => {
         provider: 'github',
         feedbackType: 'invalid-type',
       };
-      expect(() => validateCodeFeedbackArgs(args)).toThrow('feedbackType must be one of:');
+      expect(() => validateCodeFeedbackArgs(args)).toThrow('feedbackType has invalid value "invalid-type". Allowed values: general, performance, security, style, bugs');
     });
   });
 });
