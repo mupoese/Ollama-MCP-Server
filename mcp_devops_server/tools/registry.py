@@ -392,6 +392,22 @@ def auto_discover_tools() -> None:
     except ImportError as e:
         logger.warning("Could not import Playwright tools", error=str(e))
     
+    try:
+        # MCP Gateway tools
+        from .mcp_gateway import (
+            MCPGatewayConnect, MCPGatewayDisconnect, MCPGatewayListServers,
+            MCPGatewayListTools, MCPGatewayCallTool, MCPGatewayListResources
+        )
+        registry.register_tool(MCPGatewayConnect, "mcp_gateway")
+        registry.register_tool(MCPGatewayDisconnect, "mcp_gateway")
+        registry.register_tool(MCPGatewayListServers, "mcp_gateway")
+        registry.register_tool(MCPGatewayListTools, "mcp_gateway")
+        registry.register_tool(MCPGatewayCallTool, "mcp_gateway")
+        registry.register_tool(MCPGatewayListResources, "mcp_gateway")
+        
+    except ImportError as e:
+        logger.warning("Could not import MCP Gateway tools", error=str(e))
+    
     # Log final statistics
     stats = registry.get_tool_statistics()
     logger.info(
