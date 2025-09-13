@@ -4,6 +4,7 @@
  */
 
 import { logger } from './logger.js';
+import { getConfig } from '../config/index.js';
 
 /**
  * Base validation error class
@@ -270,6 +271,8 @@ export function validateCodeFeedbackArgs(args) {
     throw new InvalidTypeError('arguments', 'object', typeof args);
   }
 
+  const config = getConfig();
+
   validateRequiredString(args.code, 'code');
   validateRequiredString(args.language, 'language');
   validateRequiredString(args.provider, 'provider');
@@ -298,14 +301,39 @@ export function validateCodeFeedbackArgs(args) {
     validateOptions(args.options);
   }
 
-  // Additional validation for code length (prevent extremely large inputs)
-  if (args.code.length > 50000) { // 50KB limit
-    throw new InvalidValueError('code', 'length', ['maximum 50,000 characters']);
+  // Additional validation for code length (use configurable limit)
+  if (args.code.length > config.CODE_FEEDBACK_MAX_LENGTH) {
+    throw new InvalidValueError('code', 'length', [`maximum ${config.CODE_FEEDBACK_MAX_LENGTH} characters`]);
+  }
+
+  // Validate minimum code length (prevent empty submissions)
+  if (args.code.trim().length < 5) {
+    throw new InvalidValueError('code', 'length', ['minimum 5 characters of actual code']);
   }
 
   // Validate language format (basic check)
   if (!/^[a-zA-Z0-9+_-]+$/.test(args.language)) {
     throw new InvalidValueError('language', args.language, ['alphanumeric characters, +, _, - only']);
+  }
+
+  // Additional security: check for potentially malicious content patterns (if enabled)
+  if (config.ENABLE_SECURITY_LOGGING) {
+    const suspiciousPatterns = [
+      /eval\s*\(/i,
+      /exec\s*\(/i,
+      /system\s*\(/i,
+      /__import__\s*\(/i,
+    ];
+
+    const foundSuspicious = suspiciousPatterns.some(pattern => pattern.test(args.code));
+    if (foundSuspicious) {
+      logger.warn('Potentially suspicious code pattern detected in feedback request', {
+        language: args.language,
+        provider: args.provider,
+        codeLength: args.code.length,
+      });
+      // Note: We log but don't block - this is a feedback tool, not an execution environment
+    }
   }
 
   logger.debug('Code feedback arguments validated successfully', {

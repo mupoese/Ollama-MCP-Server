@@ -243,6 +243,124 @@ export async function handlePullModel(args) {
 }
 
 /**
+ * Generate basic static code analysis for placeholder providers
+ * @param {string} code - Code to analyze
+ * @param {string} language - Programming language
+ * @param {string} feedbackType - Type of feedback requested
+ * @returns {Object} Basic analysis results
+ */
+function generateBasicCodeAnalysis(code, language, feedbackType) {
+  const lines = code.split('\n');
+
+  // Basic complexity assessment
+  const complexityIndicators = {
+    javascript: ['function', 'class', 'if', 'for', 'while', 'try', 'catch', 'async', 'await'],
+    python: ['def', 'class', 'if', 'for', 'while', 'try', 'except', 'async', 'await'],
+    java: ['public', 'private', 'protected', 'class', 'interface', 'if', 'for', 'while', 'try', 'catch'],
+    default: ['function', 'class', 'if', 'for', 'while', 'try', 'catch'],
+  };
+
+  const indicators = complexityIndicators[language] || complexityIndicators.default;
+  const complexityCount = indicators.reduce((count, keyword) => {
+    return count + (code.toLowerCase().match(new RegExp(`\\b${keyword}\\b`, 'g')) || []).length;
+  }, 0);
+
+  const complexity = complexityCount < 5 ? 'Low' : complexityCount < 15 ? 'Medium' : 'High';
+
+  // Generate feedback-specific observations
+  const observations = generateFeedbackSpecificObservations(code, language, feedbackType, lines);
+  const suggestions = generateBasicSuggestions(code, language, feedbackType);
+
+  return {
+    complexity,
+    observations,
+    suggestions,
+  };
+}
+
+/**
+ * Generate feedback-specific observations
+ */
+function generateFeedbackSpecificObservations(code, language, feedbackType, lines) {
+  const observations = [];
+
+  if (feedbackType === 'security') {
+    if (code.includes('eval(') || code.includes('innerHTML') || code.includes('document.write')) {
+      observations.push('⚠️ Potential security concerns detected (eval, innerHTML, document.write)');
+    }
+    if (code.includes('SELECT') && code.includes('+')) {
+      observations.push('⚠️ Possible SQL injection pattern detected');
+    }
+    if (!observations.length) {
+      observations.push('✅ No obvious security anti-patterns detected in basic scan');
+    }
+  } else if (feedbackType === 'performance') {
+    if (code.includes('for') && code.includes('.length')) {
+      observations.push('🔍 Loop detected - consider caching length property');
+    }
+    if (code.includes('querySelector') || code.includes('getElementById')) {
+      observations.push('🔍 DOM queries detected - consider caching elements');
+    }
+    if (!observations.length) {
+      observations.push('📊 Basic performance scan completed');
+    }
+  } else if (feedbackType === 'style') {
+    const hasConsistentIndentation = lines.every(line => line.startsWith('  ') || line.startsWith('\t') || line.trim() === '');
+    if (!hasConsistentIndentation) {
+      observations.push('📏 Inconsistent indentation detected');
+    }
+    const hasComments = code.includes('//') || code.includes('/*') || code.includes('#');
+    if (!hasComments && lines.length > 10) {
+      observations.push('📝 Consider adding comments for better readability');
+    }
+    if (!observations.length) {
+      observations.push('✅ Basic style conventions appear consistent');
+    }
+  } else {
+    observations.push(`🔍 General code structure analysis for ${language} code`);
+    observations.push(`📏 Code contains ${lines.length} lines with ${lines.filter(l => l.trim()).length} non-empty lines`);
+  }
+
+  return observations.map(obs => `- ${obs}`).join('\n');
+}
+
+/**
+ * Generate basic suggestions based on feedback type
+ */
+function generateBasicSuggestions(code, language, feedbackType) {
+  const suggestions = [];
+
+  switch (feedbackType) {
+  case 'security':
+    suggestions.push('🔒 Validate all user inputs');
+    suggestions.push('🛡️ Use parameterized queries for database operations');
+    suggestions.push('🔐 Implement proper authentication and authorization');
+    break;
+  case 'performance':
+    suggestions.push('⚡ Profile code execution to identify bottlenecks');
+    suggestions.push('💾 Consider caching frequently accessed data');
+    suggestions.push('🔄 Optimize loops and data structures for efficiency');
+    break;
+  case 'style':
+    suggestions.push('📏 Ensure consistent indentation and formatting');
+    suggestions.push('📝 Add meaningful comments and documentation');
+    suggestions.push('🏷️ Use descriptive variable and function names');
+    break;
+  case 'bugs':
+    suggestions.push('🐛 Add proper error handling and edge case validation');
+    suggestions.push('✅ Implement comprehensive unit tests');
+    suggestions.push('🔍 Review logic flow and variable scoping');
+    break;
+  default:
+    suggestions.push('📖 Review code for clarity and maintainability');
+    suggestions.push('🧪 Add appropriate tests for all functionality');
+    suggestions.push('📚 Follow language-specific best practices');
+  }
+
+  return suggestions.map(sug => `- ${sug}`).join('\n');
+}
+
+/**
  * Get AI-powered code feedback from various providers
  * @param {Object} args - Code feedback arguments
  * @returns {Promise<Object>} MCP response with code feedback
@@ -264,28 +382,68 @@ export async function handleCodeFeedback(args) {
 
     let feedback = '';
 
-    // Create feedback prompt based on feedback type
+    // Create enhanced feedback prompts based on feedback type
     const feedbackPrompts = {
-      general: `Please review this ${language} code and provide general feedback on its quality, readability, and best practices:`,
-      performance: `Please analyze this ${language} code for performance issues and optimization opportunities:`,
-      security: `Please review this ${language} code for security vulnerabilities and potential security issues:`,
-      style: `Please review this ${language} code for coding style, formatting, and conventions:`,
-      bugs: `Please analyze this ${language} code for potential bugs, errors, and logic issues:`,
+      general: {
+        intro: `You are an expert ${language} code reviewer. Analyze the following code comprehensively for overall quality, maintainability, and adherence to best practices.`,
+        focus: 'Focus on: code structure, readability, maintainability, naming conventions, and overall design patterns.',
+      },
+      performance: {
+        intro: `You are a performance optimization specialist for ${language}. Analyze the following code for performance bottlenecks and optimization opportunities.`,
+        focus: 'Focus on: algorithm efficiency, memory usage, I/O operations, data structures, and scalability concerns.',
+      },
+      security: {
+        intro: `You are a cybersecurity expert specializing in ${language} application security. Analyze the following code for security vulnerabilities and potential threats.`,
+        focus: 'Focus on: input validation, injection attacks, authentication/authorization, data exposure, and secure coding practices.',
+      },
+      style: {
+        intro: `You are a ${language} code style and formatting expert. Analyze the following code for adherence to coding standards and style guidelines.`,
+        focus: 'Focus on: formatting consistency, naming conventions, code organization, documentation, and language-specific style guides.',
+      },
+      bugs: {
+        intro: `You are a senior ${language} developer specializing in bug detection and debugging. Analyze the following code for potential bugs, errors, and logical issues.`,
+        focus: 'Focus on: logic errors, edge cases, error handling, null/undefined references, and runtime exceptions.',
+      },
     };
 
-    const promptText = `${feedbackPrompts[feedbackType]}
+    const prompt = feedbackPrompts[feedbackType];
+    const promptText = `${prompt.intro}
 
+${prompt.focus}
+
+## Code to Review:
 \`\`\`${language}
 ${code}
 \`\`\`
 
-Please provide:
-1. Summary of findings
-2. Specific issues (if any)
-3. Recommendations for improvement
-4. Best practices suggestions
+## Required Response Format:
 
-Focus on actionable feedback that helps improve code quality.`;
+### 🔍 Analysis Summary
+Provide a brief overview of the code's current state and main findings.
+
+### ⚠️ Issues Identified
+List specific issues found (if any):
+- **Priority Level**: High/Medium/Low
+- **Issue**: Description of the problem
+- **Line/Section**: Where the issue occurs
+- **Impact**: Potential consequences
+
+### ✅ Positive Aspects
+Highlight what's working well in the code.
+
+### 🔧 Recommendations
+Provide specific, actionable recommendations:
+1. **Immediate fixes** (critical issues)
+2. **Improvements** (optimization opportunities)
+3. **Best practices** (long-term maintainability)
+
+### 📚 Code Examples
+If applicable, provide improved code snippets or alternatives.
+
+### 🏷️ Overall Rating
+Rate the code quality: Excellent/Good/Fair/Needs Improvement
+
+Be specific, constructive, and provide actionable feedback that helps improve code quality.`;
 
     // Route to appropriate provider
     switch (provider) {
@@ -301,7 +459,18 @@ Focus on actionable feedback that helps improve code quality.`;
           messages: [
             {
               role: 'system',
-              content: 'You are a helpful code reviewer. Provide constructive, actionable feedback on code quality, security, performance, and best practices.',
+              content: `You are an expert code reviewer and software engineer with deep expertise in ${language} development. Your role is to provide comprehensive, constructive, and actionable code feedback.
+
+Key principles:
+- Be specific and cite exact code locations when identifying issues
+- Provide clear explanations of WHY something is problematic
+- Suggest concrete, implementable solutions
+- Balance criticism with recognition of good practices
+- Consider security, performance, maintainability, and readability
+- Use the requested structured format for consistent, professional feedback
+- Adapt your analysis depth to the complexity of the code provided
+
+Your analysis should be thorough but concise, focusing on the most impactful improvements.`,
             },
             {
               role: 'user',
@@ -320,26 +489,44 @@ Focus on actionable feedback that helps improve code quality.`;
     case 'claude':
     case 'chatgpt':
     {
-      // For now, these providers are not implemented
-      // In a real implementation, you would integrate with their APIs
-      feedback = `Code feedback using ${provider} provider is not yet implemented. 
-      
-However, here's a basic analysis of your ${language} code:
+      // Enhanced placeholder implementation with structured basic analysis
+      const basicAnalysis = generateBasicCodeAnalysis(code, language, feedbackType);
 
-**Code Analysis:**
-- Language: ${language}
-- Code length: ${code.length} characters
-- Feedback type requested: ${feedbackType}
+      feedback = `## 🔄 ${provider.toUpperCase()} Provider Status
 
-**Next Steps:**
-1. Use the 'ollama' provider for immediate feedback
-2. Ensure you have appropriate models installed locally
-3. Consider implementing ${provider} API integration for enhanced feedback
+**Status**: Integration in development - using basic static analysis
 
-**Basic Observations:**
-- Code appears to be ${language} syntax
-- Feedback focus: ${feedbackType}
-- Consider running with ollama provider for detailed analysis`;
+### 🔍 Analysis Summary
+This is a preliminary analysis of your ${language} code. For comprehensive AI-powered feedback, please use the 'ollama' provider with local models.
+
+### 📊 Code Metrics
+- **Language**: ${language}
+- **Size**: ${code.length} characters (${code.split('\n').length} lines)
+- **Analysis Type**: ${feedbackType}
+- **Complexity**: ${basicAnalysis.complexity}
+
+### 🔍 Basic Observations
+${basicAnalysis.observations}
+
+### ⚠️ Potential Areas for Review
+${basicAnalysis.suggestions}
+
+### 🚀 Get Enhanced Feedback
+For detailed AI-powered analysis, use:
+\`\`\`json
+{
+  "provider": "ollama",
+  "model": "codellama:7b",
+  "feedbackType": "${feedbackType}"
+}
+\`\`\`
+
+### 🔧 Implementation Notes
+- ${provider} API integration: **Planned for future release**
+- Current analysis: **Basic pattern matching**
+- Enhanced features: **Available with ollama provider**
+
+*This analysis provides general guidance. For production code reviews, consider using the ollama provider or professional code review tools.*`;
       break;
     }
 

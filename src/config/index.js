@@ -14,6 +14,10 @@ const DEFAULT_CONFIG = {
   SERVER_VERSION: '1.0.0',
   REQUEST_TIMEOUT: 30000, // 30 seconds
   MAX_RETRIES: 3,
+  // Code feedback specific settings
+  CODE_FEEDBACK_TIMEOUT: 60000, // 60 seconds for AI analysis
+  CODE_FEEDBACK_MAX_LENGTH: 50000, // 50KB code limit
+  ENABLE_SECURITY_LOGGING: true, // Log suspicious patterns
 };
 
 /**
@@ -29,6 +33,10 @@ export function loadConfig() {
     SERVER_VERSION: process.env.SERVER_VERSION || DEFAULT_CONFIG.SERVER_VERSION,
     REQUEST_TIMEOUT: parseInt(process.env.REQUEST_TIMEOUT) || DEFAULT_CONFIG.REQUEST_TIMEOUT,
     MAX_RETRIES: parseInt(process.env.MAX_RETRIES) || DEFAULT_CONFIG.MAX_RETRIES,
+    // Code feedback specific configuration
+    CODE_FEEDBACK_TIMEOUT: parseInt(process.env.CODE_FEEDBACK_TIMEOUT) || DEFAULT_CONFIG.CODE_FEEDBACK_TIMEOUT,
+    CODE_FEEDBACK_MAX_LENGTH: parseInt(process.env.CODE_FEEDBACK_MAX_LENGTH) || DEFAULT_CONFIG.CODE_FEEDBACK_MAX_LENGTH,
+    ENABLE_SECURITY_LOGGING: process.env.ENABLE_SECURITY_LOGGING !== 'false',
   };
 
   // Validate configuration
