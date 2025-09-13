@@ -1,0 +1,85 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug MCP Server",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "args": ["serve"],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG": "true",
+                "ENVIRONMENT": "development"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "justMyCode": false
+        },
+        {
+            "name": "Debug MCP Server with Ollama",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "args": ["serve"],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG": "true",
+                "ENVIRONMENT": "development",
+                "OLLAMA_API": "http://localhost:11434",
+                "OLLAMA_AGENT_2_URL": "http://localhost:11435",
+                "OLLAMA_AGENT_3_URL": "http://localhost:11436"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "justMyCode": false
+        },
+        {
+            "name": "Test MCP Tools",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "args": ["list-tools"],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG": "true"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false
+        },
+        {
+            "name": "Health Check",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "args": ["health"],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG": "true"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false
+        },
+        {
+            "name": "Run Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "--tb=short"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false
+        }
+    ]
+}
