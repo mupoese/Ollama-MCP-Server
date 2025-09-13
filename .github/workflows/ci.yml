@@ -37,17 +37,17 @@ jobs:
         pip install -e .[dev]
 
     - name: Run linting with black
-      run: black --check --diff mcp_devops_server/ tests/
+      run: black --check --diff src/ tests/
 
     - name: Run linting with flake8
-      run: flake8 mcp_devops_server/ tests/
+      run: flake8 src/ tests/
 
     - name: Run type checking with mypy
-      run: mypy mcp_devops_server/
+      run: mypy src/ollama_mcp_server/
       continue-on-error: true  # Type hints are still being added
 
     - name: Run tests with pytest
-      run: pytest --cov=mcp_devops_server --cov-report=xml --cov-report=term-missing
+      run: pytest tests/python/ --cov=src.ollama_mcp_server --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -83,13 +83,13 @@ jobs:
     - name: Test MCP server functionality
       run: |
         # Test CLI commands
-        python -m mcp_devops_server.main --help
-        python -m mcp_devops_server.main health
-        python -m mcp_devops_server.main list-tools
-        python -m mcp_devops_server.main validate-config
+        python -m src.ollama_mcp_server.main --help
+        python -m src.ollama_mcp_server.main health
+        python -m src.ollama_mcp_server.main list-tools
+        python -m src.ollama_mcp_server.main validate-config
 
     - name: Test tool registration and execution
-      run: pytest tests/integration/ -v --timeout=30
+      run: pytest tests/python/integration/ -v --timeout=30
 
   docker-build:
     name: Build and Test Docker Images
@@ -126,7 +126,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: ./Dockerfile.python
+        file: ./docker/Dockerfile.python
         target: production
         push: false
         tags: mcp-ollama-server:test
@@ -147,7 +147,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: ./Dockerfile.python
+        file: ./docker/Dockerfile.python
         target: production
         push: true
         tags: ${{ steps.meta.outputs.tags }}
@@ -180,11 +180,11 @@ jobs:
       run: safety check --json
 
     - name: Run code security scan with bandit
-      run: bandit -r mcp_devops_server/ -f json
+      run: bandit -r src/ollama_mcp_server/ -f json
       continue-on-error: true
 
     - name: Run SAST with Semgrep
-      run: semgrep --config=auto mcp_devops_server/
+      run: semgrep --config=auto src/ollama_mcp_server/
       continue-on-error: true
 
     - name: Check for security vulnerabilities in requirements

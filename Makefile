@@ -36,73 +36,73 @@ help:
 # Setup development environment
 setup:
 	@echo "🔧 Setting up development environment..."
-	@./scripts/setup-dev.sh
+	@./scripts/setup/setup-dev.sh
 
 # Start development server
 dev:
 	@echo "🚀 Starting development server..."
-	@source venv/bin/activate && python -m mcp_devops_server.main serve --debug
+	@source venv/bin/activate && python -m src.ollama_mcp_server.main serve --debug
 
 # Run tests
 test:
 	@echo "🧪 Running tests..."
-	@source venv/bin/activate && pytest tests/ -v --tb=short
+	@source venv/bin/activate && pytest tests/python/ -v --tb=short
 
 # Run tests with coverage
 test-coverage:
 	@echo "🧪 Running tests with coverage..."
-	@source venv/bin/activate && pytest tests/ -v --cov=mcp_devops_server --cov-report=html --cov-report=term
+	@source venv/bin/activate && pytest tests/python/ -v --cov=src.ollama_mcp_server --cov-report=html --cov-report=term
 
 # Format code
 format:
 	@echo "🎨 Formatting code..."
-	@source venv/bin/activate && black mcp_devops_server/ tests/ scripts/
-	@source venv/bin/activate && isort mcp_devops_server/ tests/ scripts/
+	@source venv/bin/activate && black src/ tests/ scripts/
+	@source venv/bin/activate && isort src/ tests/ scripts/
 
 # Run linting
 lint:
 	@echo "🔍 Running linting checks..."
-	@source venv/bin/activate && pylint mcp_devops_server/
-	@source venv/bin/activate && mypy mcp_devops_server/
-	@source venv/bin/activate && black --check mcp_devops_server/ tests/
-	@source venv/bin/activate && isort --check-only mcp_devops_server/ tests/
+	@source venv/bin/activate && pylint src/ollama_mcp_server/
+	@source venv/bin/activate && mypy src/ollama_mcp_server/
+	@source venv/bin/activate && black --check src/ tests/
+	@source venv/bin/activate && isort --check-only src/ tests/
 
 # Docker commands
 docker-build:
-	@./scripts/docker-build.sh
+	@./scripts/docker/docker-build.sh
 
 docker-start:
-	@./scripts/docker-start.sh
+	@./scripts/docker/docker-start.sh
 
 docker-stop:
 	@echo "🛑 Stopping Docker containers..."
-	@docker-compose down
+	@docker-compose -f docker/docker-compose.yml down
 
 docker-logs:
 	@echo "📋 Showing container logs..."
-	@docker-compose logs -f
+	@docker-compose -f docker/docker-compose.yml logs -f
 
 # Health and validation
 health:
 	@echo "🏥 Running health check..."
-	@source venv/bin/activate && python -m mcp_devops_server.main health
+	@source venv/bin/activate && python -m src.ollama_mcp_server.main health
 
 tools:
 	@echo "🛠️ Listing available tools..."
-	@source venv/bin/activate && python -m mcp_devops_server.main list-tools
+	@source venv/bin/activate && python -m src.ollama_mcp_server.main list-tools
 
 validate:
 	@echo "✅ Validating configuration..."
-	@source venv/bin/activate && python -m mcp_devops_server.main validate-config
+	@source venv/bin/activate && python -m src.ollama_mcp_server.main validate-config
 
 # MCP Gateway demonstrations
 gateway-demo:
 	@echo "🌐 Running MCP Gateway demo..."
-	@./scripts/mcp-gateway-demo.sh
+	@./scripts/gateway/mcp-gateway-demo.sh
 
 gateway-tools:
 	@echo "🌐 Listing MCP Gateway tools..."
-	@source venv/bin/activate && python -m mcp_devops_server.main list-tools | grep gateway
+	@source venv/bin/activate && python -m src.ollama_mcp_server.main list-tools | grep gateway
 
 # Maintenance
 clean:
@@ -115,7 +115,7 @@ clean:
 clean-all: clean
 	@echo "🧹 Cleaning everything including virtual environment..."
 	@rm -rf venv/ 2>/dev/null || true
-	@docker-compose down --volumes --remove-orphans 2>/dev/null || true
+	@docker-compose -f docker/docker-compose.yml down --volumes --remove-orphans 2>/dev/null || true
 	@docker image prune -f 2>/dev/null || true
 
 # Install pre-commit hooks
@@ -128,17 +128,17 @@ install-hooks:
 security:
 	@echo "🔒 Running security checks..."
 	@source venv/bin/activate && safety check
-	@source venv/bin/activate && bandit -r mcp_devops_server/
+	@source venv/bin/activate && bandit -r src/ollama_mcp_server/
 
 # Performance testing
 perf-test:
 	@echo "⚡ Running performance tests..."
-	@source venv/bin/activate && python -m pytest tests/ -k "performance" -v
+	@source venv/bin/activate && python -m pytest tests/python/ -k "performance" -v
 
 # Generate documentation
 docs:
 	@echo "📚 Generating documentation..."
-	@source venv/bin/activate && python -m pdoc mcp_devops_server/ --html --output-dir docs/api/
+	@source venv/bin/activate && python -m pdoc src/ollama_mcp_server/ --html --output-dir docs/api/
 
 # Check for outdated dependencies
 deps-check:

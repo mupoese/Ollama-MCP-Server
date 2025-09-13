@@ -2,7 +2,7 @@
 name = "ollama-mcp-devops-server"
 version = "2.0.0"
 description = "Python-based MCP DevOps Tools Server with Ollama Integration"
-readme = "README.md"
+readme = "docs/README.md"
 license = {file = "LICENSE"}
 authors = [
     {name = "mupoese", email = "mupoese@users.noreply.github.com"},
@@ -82,7 +82,7 @@ all = [
 ]
 
 [project.scripts]
-mcp-devops-server = "mcp_devops_server.main:cli"
+mcp-devops-server = "src.ollama_mcp_server.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/mupoese/Ollama-MCP-Server"
@@ -94,8 +94,8 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["mcp_devops_server*"]
+where = ["src"]
+include = ["ollama_mcp_server*"]
 
 [tool.black]
 line-length = 88
@@ -133,7 +133,7 @@ strict_equality = true
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --strict-markers --strict-config"
-testpaths = ["tests"]
+testpaths = ["tests/python"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -144,7 +144,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["mcp_devops_server"]
+source = ["src/ollama_mcp_server"]
 omit = [
     "*/tests/*",
     "*/test_*",

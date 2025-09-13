@@ -5,7 +5,7 @@
             "name": "Debug MCP Server",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "module": "src.ollama_mcp_server.main",
             "args": ["serve"],
             "console": "integratedTerminal",
             "env": {
@@ -21,7 +21,7 @@
             "name": "Debug MCP Server with Ollama",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "module": "src.ollama_mcp_server.main",
             "args": ["serve"],
             "console": "integratedTerminal",
             "env": {
@@ -40,7 +40,7 @@
             "name": "Test MCP Tools",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "module": "src.ollama_mcp_server.main",
             "args": ["list-tools"],
             "console": "integratedTerminal",
             "env": {
@@ -54,7 +54,7 @@
             "name": "Health Check",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/mcp_devops_server/main.py",
+            "module": "src.ollama_mcp_server.main",
             "args": ["health"],
             "console": "integratedTerminal",
             "env": {
@@ -70,7 +70,7 @@
             "request": "launch",
             "module": "pytest",
             "args": [
-                "tests/",
+                "tests/python/",
                 "-v",
                 "--tb=short"
             ],

@@ -78,6 +78,9 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+artifacts/dist/
+artifacts/build/
+artifacts/logs/
 
 # Test outputs
 test-results/
