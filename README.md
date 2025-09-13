@@ -1,111 +1,366 @@
-# Ollama-MCP-Server
+# MCP Ollama Server
 
 **Author/Maintainer:** [Mupoese](https://github.com/mupoese)  
-**Version:** v1.0.1  
+**Version:** v2.0.0  
 **License:** GNU General Public License v2.0  
-**AI Compliance:** LAW-001 (Comprehensive AI Learning Cycle)
+**Language:** Python 3.13+ (Migrated from Node.js)
 
-## 🚀 AI-Enhanced MCP Server
+## 🚀 Production-Ready Python MCP DevOps Server
 
-This Ollama MCP Server has been enhanced with comprehensive AI law enforcement and learning cycle capabilities, implementing LAW-001 requirements for:
+A comprehensive Python-based Model Context Protocol (MCP) server that provides AI models with access to essential DevOps tools, multi-agent Ollama support, GitHub integration, browser automation, and revolutionary **MCP Gateway functionality** for multi-server orchestration.
 
-- **6-Step Learning Cycle**: Automatic execution on cause detection
-- **Snapshot Generation**: JSON schema-based memory system
-- **Pattern Detection**: Systematic deviation analysis
-- **Governance Framework**: Automated approval system for AI core updates
-- **Law Enforcement**: Real-time compliance validation
+### ✨ Key Features
 
-### 🤖 AI Core Features
+- **🤖 Multi-Agent Ollama Support**: Up to 8 specialized AI endpoints for agentic responses
+- **🛠️ 28 DevOps Tools**: Docker, Kubernetes, Git, GitHub API, Playwright browser automation
+- **🌐 MCP Gateway**: Connect and orchestrate multiple external MCP servers
+- **🔒 Enterprise Security**: Audit logging, input validation, role-based access
+- **🐳 Production Docker**: Multi-stage builds with development and production targets
+- **📊 Comprehensive Testing**: Verified tool execution and integration tests
 
-- **Automatic Learning Cycles**: Every tool execution triggers a complete 6-step learning cycle
-- **Memory Persistence**: Snapshots automatically saved and loaded on startup
-- **Pattern Recognition**: Detects systematic deviations and triggers escalation
-- **Governance Control**: All core AI logic changes require explicit approval
-- **Law Compliance**: Full adherence to LAW-001 requirements
+## 🏃‍♂️ Quick Start
 
-## Docker Usage Options
-
-### Option 1: Use Pre-built Image (Recommended)
+### 🎯 One-Command Setup
 
 ```bash
-# Pull and run from Docker Hub
-docker run -i --rm --network host \
-  -e OLLAMA_API=http://localhost:11434 \
-  docker.io/mup1987/ollama-mcp-server:latest
-```
-
-### Option 2: Build Your Own Image
-
-```bash
-# Clone, build, and run locally
+# Clone and setup everything automatically
 git clone https://github.com/mupoese/Ollama-MCP-Server.git
 cd Ollama-MCP-Server
-docker build -t my-ollama-mcp-server .
-docker run -i --rm --network host \
-  -e OLLAMA_API=http://localhost:11434 \
-  my-ollama-mcp-server
+make quickstart
 ```
 
-### Option 3: Docker Compose (Production)
+### 🐳 Docker Quick Start
 
-Create a `docker-compose.yml`:
+```bash
+# Option 1: Use pre-built image
+docker run -it --rm -p 8000:8000 \
+  -e OLLAMA_API=http://host.docker.internal:11434 \
+  ghcr.io/mupoese/ollama-mcp-server:latest
 
+# Option 2: Build and run locally
+make docker-build
+make docker-start
+```
+
+### 💻 Development Setup
+
+```bash
+# Setup development environment
+make setup
+
+# Start development server
+make dev
+
+# Run tests
+make test
+
+# Open VS Code workspace
+code .vscode/mcp-server.code-workspace
+```
+
+## 🛠️ Available Tools (28 Total)
+
+### 🤖 Ollama Integration (5 tools)
+- **Multi-Agent Support**: `ollama_chat` with agent routing
+- **Model Management**: `ollama_list_models`, `ollama_pull_model`
+- **Agent Management**: `ollama_list_agents`, `ollama_test_agent`
+
+### 🏗️ Infrastructure (3 tools)
+- **Docker**: `docker_status`, `docker_list_containers`, `docker_inspect_container`
+- **Kubernetes**: Pod and deployment management (when available)
+
+### 📂 Git Operations (4 tools)
+- **Repository Management**: `git_status`, `git_clone`, `git_branch`, `git_commit`
+
+### 🐙 GitHub API (7 tools)
+- **File Operations**: `github_get_file_contents`, `github_get_commit`
+- **Repository Info**: `github_list_commits`, `github_list_branches`, `github_search_repositories`
+- **Issues & PRs**: `github_get_issue`, `github_list_pull_requests`
+
+### 🌐 Browser Automation (9 tools)
+- **Navigation**: `playwright_navigate`, `playwright_take_screenshot`
+- **Interaction**: `playwright_click`, `playwright_type`, `playwright_wait_for`
+- **Advanced**: `playwright_get_text`, `playwright_fill_form`, `playwright_evaluate`, `playwright_get_page_info`
+
+### 🌐 MCP Gateway (6 tools) ✨ **NEW**
+- **Connection Management**: `mcp_gateway_connect`, `mcp_gateway_disconnect`
+- **Server Orchestration**: `mcp_gateway_list_servers`, `mcp_gateway_list_tools`
+- **Tool Routing**: `mcp_gateway_call_tool`, `mcp_gateway_list_resources`
+
+All development commands are available through the `Makefile`:
+
+```bash
+# 📖 Setup & Development
+make setup          # Setup development environment
+make dev            # Start development server
+make test           # Run tests
+make format         # Format code
+make lint           # Run linting
+
+# 🐳 Docker Commands
+make docker-build   # Build Docker images
+make docker-start   # Start with Docker Compose
+make docker-stop    # Stop containers
+make docker-logs    # View logs
+
+# 🧪 Testing & Health
+make health         # Health check
+make tools          # List available tools
+make validate       # Validate configuration
+
+# 🌐 MCP Gateway
+make gateway-demo   # Gateway demonstration
+make gateway-tools  # List gateway tools
+
+# 🧹 Maintenance
+make clean          # Clean temporary files
+make clean-all      # Clean everything
+```
+
+## 🌐 MCP Gateway - Multi-Server Orchestration
+
+The **MCP Gateway functionality** is a revolutionary feature that allows this server to act as a centralized hub for connecting to and managing multiple external MCP servers.
+
+### Gateway Capabilities
+
+```bash
+# Connect to external MCP servers
+python scripts/mcp-gateway-connect.py connect ollama_node stdio --command 'node,server.js'
+python scripts/mcp-gateway-connect.py connect remote_server sse --url 'https://api.example.com/mcp'
+
+# List connected servers
+python scripts/mcp-gateway-connect.py list-servers
+
+# Aggregate tools from all servers
+python scripts/mcp-gateway-connect.py list-tools
+
+# Run gateway demonstration
+make gateway-demo
+```
+
+### Use Cases
+
+- **Multi-Agent Ollama**: Connect multiple Ollama instances with different models
+- **Enterprise Integration**: Centralized access to distributed enterprise tooling
+- **Load Balancing**: Distribute workload across multiple servers
+- **Failover Support**: Resilient operations with backup connections
+
+## 🤖 Multi-Agent Configuration
+
+Configure up to 8 specialized Ollama agents:
+
+```bash
+# Environment configuration
+OLLAMA_API=http://localhost:11434              # Primary agent
+OLLAMA_AGENT_2_URL=http://localhost:11435      # Code analysis
+OLLAMA_AGENT_3_URL=http://localhost:11436      # Security reviews
+OLLAMA_AGENT_4_URL=http://gpu-server:11434     # Heavy computation
+# ... up to OLLAMA_AGENT_8_URL
+```
+
+Route requests to specific agents:
+```python
+# Chat with specific agent
+{
+  "tool": "ollama_chat",
+  "arguments": {
+    "message": "Analyze this code for security issues",
+    "agent": "secondary"  # Routes to OLLAMA_AGENT_2_URL
+  }
+}
+```
+
+## 🔧 IDE Support
+
+### VS Code Integration
+
+Open the pre-configured workspace:
+```bash
+code .vscode/mcp-server.code-workspace
+```
+
+**Features included:**
+- Python debugging configurations for MCP server
+- Integrated terminal with proper PYTHONPATH
+- Task runners for common development commands
+- Extension recommendations for Python development
+- Code formatting and linting on save
+
+### Debug Configurations
+
+- **Debug MCP Server**: Run server with debugger attached
+- **Debug with Ollama**: Run with multi-agent Ollama configuration
+- **Test Tools**: Debug tool execution
+- **Run Tests**: Debug test suite
+
+## 🐳 Docker Development
+
+### Development Container
+
+```bash
+# Build development image
+make docker-build
+
+# Start development environment
+make docker-start
+
+# Get shell in container
+docker-compose exec mcp-ollama-server bash
+
+# Run commands in container
+docker-compose exec mcp-ollama-server python -m mcp_devops_server.main health
+```
+
+### Production Deployment
+
+```bash
+# Production docker-compose.yml includes:
+# - Health checks
+# - Restart policies  
+# - Volume mounts
+# - Environment configuration
+# - Network isolation
+# - Multi-agent support
+
+docker-compose up -d
+```
+
+## 📊 Testing & Quality
+
+### Comprehensive Testing
+
+```bash
+# Run all tests
+make test
+
+# Run with coverage
+make test-coverage
+
+# Run specific test categories
+pytest tests/test_config.py -v
+pytest tests/test_tools.py -v
+pytest tests/test_mcp_gateway.py -v
+```
+
+### Code Quality
+
+```bash
+# Format code
+make format
+
+# Lint code
+make lint
+
+# Security checks
+make security
+
+# Type checking included in lint
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+```bash
+# Core Configuration
+ENVIRONMENT=development|staging|production
+DEBUG=true|false
+LOG_LEVEL=DEBUG|INFO|WARNING|ERROR
+
+# Ollama Configuration
+OLLAMA_API=http://localhost:11434
+OLLAMA_AGENT_2_URL=http://localhost:11435
+# ... additional agents
+
+# GitHub Integration
+GITHUB_TOKEN=your_github_token_here
+
+# Security & Performance
+AUDIT_LOGGING=true
+INPUT_VALIDATION=true
+REQUEST_TIMEOUT=30
+MAX_RETRIES=3
+CACHE_TTL=300
+```
+
+### Configuration File
+
+Create `config.yaml` for advanced configuration:
 ```yaml
-version: '3.8'
-services:
-  ollama-mcp-server:
-    image: docker.io/mup1987/ollama-mcp-server:latest
-    environment:
-      - OLLAMA_API=http://host.docker.internal:11434
-    stdin_open: true
-    restart: unless-stopped
-    depends_on:
-      - ollama
-  
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
+server:
+  environment: development
+  debug: true
+  log_level: INFO
 
-volumes:
-  ollama_data:
+ollama:
+  api_url: http://localhost:11434
+  agents:
+    secondary: http://localhost:11435
+    analyst: http://localhost:11436
+
+security:
+  audit_logging: true
+  input_validation: true
+  max_request_size: 10485760
+
+tools:
+  enabled_categories:
+    - ollama
+    - infrastructure  
+    - git
+    - github
+    - browser
+    - mcp_gateway
 ```
 
-Run with: `docker-compose up -d`
+## 🚀 Production Deployment
+
+### System Requirements
+
+- **Python**: 3.12+ (3.13 recommended)
+- **Memory**: 512MB minimum, 2GB recommended
+- **Docker**: 20.10+ (optional)
+- **Ollama**: Local or remote instance
+
+### Production Checklist
+
+- [ ] Set `ENVIRONMENT=production`
+- [ ] Configure proper logging level
+- [ ] Set up health monitoring
+- [ ] Configure reverse proxy (nginx/traefik)
+- [ ] Set resource limits
+- [ ] Enable audit logging
+- [ ] Configure backup strategy
+
+## 📚 Documentation
+
+- **[MCP Gateway Functions](docs/MCP_GATEWAY_FUNCTIONS.md)**: Complete gateway documentation
+- **[API Reference](docs/api/)**: Generated API documentation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Make changes and test: `make test`
+4. Format code: `make format`
+5. Commit changes: `git commit -m 'Add amazing feature'`
+6. Push to branch: `git push origin feature/amazing-feature`
+7. Create Pull Request
+
+## 📄 License
+
+GNU General Public License v2.0 - see [LICENSE](LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for the protocol specification
+- [Ollama](https://ollama.ai/) for local LLM serving
+- [Playwright](https://playwright.dev/) for browser automation
+- [FastAPI](https://fastapi.tiangolo.com/) for the HTTP server framework
 
 ---
 
-## Overview
-
-**Ollama-MCP-Server** is a custom, extensible MCP (Model Context Protocol) server that bridges local or remote Ollama LLM models with any MCP-compatible application, such as Claude Desktop.  
-This project offers maximum flexibility, privacy, open source usage, and professional integration.
-
----
-
-## Changelog
-
-### v1.0.1
-
-- **Enhanced Documentation**: Added comprehensive MCP protocol communication documentation
-- **JSON-RPC Functions**: Detailed documentation of all available JSON-RPC functions and their usage
-- **Port Communication**: Documented port usage (11434 for Ollama, stdin/stdout for MCP)
-- **Architecture Documentation**: Added communication flow diagrams and architecture details
-
-### v1.0.0
-
-- First stable release
-- Full MCP protocol support with JSON-RPC over stdin/stdout
-- **ES Modules**: Converted from CommonJS to ES modules for MCP SDK compatibility
-- Docker support for Windows, Mac, and Linux
-- Integration instructions for Claude Desktop
-- Complete error handling and logging
-- **SILENCE_STARTUP support**: Prevents stdout pollution that breaks MCP protocol
-- Proper MCP SDK implementation with `@modelcontextprotocol/sdk`
-
----
+**🌟 Star this repository if you find it useful!**
 
 ## Key Features
 
