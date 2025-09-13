@@ -4,6 +4,24 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Python dependencies and virtual environments
+venv/
+env/
+.venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
 # Runtime data
 pids
 *.pid
@@ -51,8 +69,7 @@ logs
 ehthumbs.db
 Thumbs.db
 
-# IDE files
-.vscode/
+# IDE files (keep .vscode/ for shared configuration)
 .idea/
 *.swp
 *.swo
@@ -61,6 +78,16 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+artifacts/dist/
+artifacts/build/
+artifacts/logs/
 
 # Test outputs
 test-results/
+
+# Docker development overrides
+docker-compose.override.yml
+
+# Temporary files
+.tmp/
+tmp/

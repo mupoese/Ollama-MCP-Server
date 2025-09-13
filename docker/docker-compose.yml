@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mcp-ollama-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.python
+      target: production
+    # Or use pre-built image:
+    # image: ghcr.io/mupoese/ollama-mcp-server:latest
+    environment:
+      - OLLAMA_API=http://host.docker.internal:11434
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      # Multi-agent configuration (uncomment to enable)
+      # - OLLAMA_AGENT_2_URL=http://host.docker.internal:11435
+      # - OLLAMA_AGENT_3_URL=http://host.docker.internal:11436
+      # GitHub integration (set your token)
+      # - GITHUB_TOKEN=your_github_token_here
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # HTTP server port
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "python", "-m", "src.ollama_mcp_server.main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Run Ollama in Docker too
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Optional: Run a second Ollama instance for multi-agent setup
+  # ollama-agent-2:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11435:11434"
+  #   volumes:
+  #     - ollama_agent_2_data:/root/.ollama
+  #   networks:
+  #     - mcp-network
+  #   restart: unless-stopped
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  ollama_data:
+    driver: local
+  # ollama_agent_2_data:
+  #   driver: local
