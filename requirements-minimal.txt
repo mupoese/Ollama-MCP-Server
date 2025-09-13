@@ -1,0 +1,21 @@
+# Core MCP framework
+mcp>=1.0.0
+
+# Async and HTTP support
+aiohttp>=3.9.0
+uvloop>=0.19.0
+
+# Data validation and CLI
+pydantic>=2.5.0
+pyyaml>=6.0.1
+click>=8.1.7
+structlog>=23.2.0
+
+# Git operations (optional, graceful fallback)
+GitPython>=3.1.40
+
+# Basic development tools
+black>=23.12.1
+flake8>=7.0.0
+pytest>=7.4.4
+pytest-asyncio>=0.23.2
