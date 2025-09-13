@@ -244,15 +244,19 @@ export async function handlePullModel(args) {
 
 /**
  * Generate basic static code analysis for placeholder providers
+ * This function provides intelligent fallback analysis when AI providers
+ * are not available, using pattern matching and heuristics.
+ *
  * @param {string} code - Code to analyze
  * @param {string} language - Programming language
  * @param {string} feedbackType - Type of feedback requested
- * @returns {Object} Basic analysis results
+ * @returns {Object} Basic analysis results with complexity, observations, and suggestions
  */
 function generateBasicCodeAnalysis(code, language, feedbackType) {
   const lines = code.split('\n');
 
-  // Basic complexity assessment
+  // Basic complexity assessment using keyword counting
+  // Different languages have different complexity indicators
   const complexityIndicators = {
     javascript: ['function', 'class', 'if', 'for', 'while', 'try', 'catch', 'async', 'await'],
     python: ['def', 'class', 'if', 'for', 'while', 'try', 'except', 'async', 'await'],
@@ -261,10 +265,14 @@ function generateBasicCodeAnalysis(code, language, feedbackType) {
   };
 
   const indicators = complexityIndicators[language] || complexityIndicators.default;
+  // Count complexity indicators based on programming language
+  // Higher counts suggest more complex logic flow
   const complexityCount = indicators.reduce((count, keyword) => {
     return count + (code.toLowerCase().match(new RegExp(`\\b${keyword}\\b`, 'g')) || []).length;
   }, 0);
 
+  // Categorize complexity based on indicator frequency
+  // This provides a rough estimate of code complexity for users
   const complexity = complexityCount < 5 ? 'Low' : complexityCount < 15 ? 'Medium' : 'High';
 
   // Generate feedback-specific observations
@@ -279,12 +287,21 @@ function generateBasicCodeAnalysis(code, language, feedbackType) {
 }
 
 /**
- * Generate feedback-specific observations
+ * Generate feedback-specific observations based on code analysis
+ * This function performs targeted static analysis based on the requested feedback type.
+ * It looks for common patterns and anti-patterns specific to each category.
+ *
+ * @param {string} code - Source code to analyze
+ * @param {string} language - Programming language for context
+ * @param {string} feedbackType - Type of analysis (security, performance, style, etc.)
+ * @param {Array} lines - Array of code lines for line-based analysis
+ * @returns {string} Formatted observations with bullet points
  */
 function generateFeedbackSpecificObservations(code, language, feedbackType, lines) {
   const observations = [];
 
   if (feedbackType === 'security') {
+    // Look for common security anti-patterns that can be detected via static analysis
     if (code.includes('eval(') || code.includes('innerHTML') || code.includes('document.write')) {
       observations.push('⚠️ Potential security concerns detected (eval, innerHTML, document.write)');
     }
@@ -295,6 +312,7 @@ function generateFeedbackSpecificObservations(code, language, feedbackType, line
       observations.push('✅ No obvious security anti-patterns detected in basic scan');
     }
   } else if (feedbackType === 'performance') {
+    // Look for common performance issues that can be identified statically
     if (code.includes('for') && code.includes('.length')) {
       observations.push('🔍 Loop detected - consider caching length property');
     }
@@ -305,6 +323,7 @@ function generateFeedbackSpecificObservations(code, language, feedbackType, line
       observations.push('📊 Basic performance scan completed');
     }
   } else if (feedbackType === 'style') {
+    // Analyze code formatting and style consistency
     const hasConsistentIndentation = lines.every(line => line.startsWith('  ') || line.startsWith('\t') || line.trim() === '');
     if (!hasConsistentIndentation) {
       observations.push('📏 Inconsistent indentation detected');
@@ -317,6 +336,7 @@ function generateFeedbackSpecificObservations(code, language, feedbackType, line
       observations.push('✅ Basic style conventions appear consistent');
     }
   } else {
+    // General analysis provides basic code metrics
     observations.push(`🔍 General code structure analysis for ${language} code`);
     observations.push(`📏 Code contains ${lines.length} lines with ${lines.filter(l => l.trim()).length} non-empty lines`);
   }
@@ -326,6 +346,13 @@ function generateFeedbackSpecificObservations(code, language, feedbackType, line
 
 /**
  * Generate basic suggestions based on feedback type
+ * Provides category-specific recommendations that apply to most codebases.
+ * These are general best practices that don't require deep code analysis.
+ *
+ * @param {string} code - Source code (for potential future enhancements)
+ * @param {string} language - Programming language context
+ * @param {string} feedbackType - Category of suggestions to generate
+ * @returns {string} Formatted suggestions with bullet points
  */
 function generateBasicSuggestions(code, language, feedbackType) {
   const suggestions = [];
@@ -362,8 +389,28 @@ function generateBasicSuggestions(code, language, feedbackType) {
 
 /**
  * Get AI-powered code feedback from various providers
+ *
+ * This is the main entry point for the AI code feedback functionality.
+ * It supports multiple AI providers and falls back to intelligent static analysis
+ * when AI providers are unavailable.
+ *
+ * Features:
+ * - Multi-provider support (ollama, github, claude, chatgpt)
+ * - Specialized prompts for different feedback types
+ * - Structured, professional output format
+ * - Intelligent fallback analysis for non-ollama providers
+ * - Comprehensive input validation and security checks
+ *
  * @param {Object} args - Code feedback arguments
- * @returns {Promise<Object>} MCP response with code feedback
+ * @param {string} args.code - Source code to analyze
+ * @param {string} args.language - Programming language
+ * @param {string} args.provider - AI provider ('ollama', 'github', 'claude', 'chatgpt')
+ * @param {string} [args.model] - Model name (required for ollama)
+ * @param {string} [args.feedbackType='general'] - Type of feedback
+ * @param {Object} [args.options] - Provider-specific options
+ * @returns {Promise<Object>} MCP response with structured code feedback
+ * @throws {ValidationError} When input validation fails
+ * @throws {McpError} When processing fails
  */
 export async function handleCodeFeedback(args) {
   try {

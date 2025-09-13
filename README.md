@@ -280,6 +280,29 @@ The server implements the Model Context Protocol (MCP) specification with the fo
 | `SILENCE_STARTUP` | `false` | Suppress startup logs for MCP compatibility |
 | `REQUEST_TIMEOUT` | `30000` | HTTP request timeout (ms) |
 | `MAX_RETRIES` | `3` | HTTP request retry attempts |
+| `CODE_FEEDBACK_TIMEOUT` | `60000` | AI code feedback analysis timeout (ms) |
+| `CODE_FEEDBACK_MAX_LENGTH` | `50000` | Maximum code length for analysis (characters) |
+| `ENABLE_SECURITY_LOGGING` | `true` | Enable security pattern detection logging |
+
+#### Code Feedback Configuration
+
+The enhanced AI code feedback tool supports additional configuration for security and performance:
+
+- **Timeout Control**: `CODE_FEEDBACK_TIMEOUT` allows longer analysis for complex code
+- **Size Limits**: `CODE_FEEDBACK_MAX_LENGTH` prevents resource exhaustion from large files
+- **Security Monitoring**: `ENABLE_SECURITY_LOGGING` logs suspicious patterns (eval, exec, etc.)
+
+Example `.env` configuration:
+```bash
+# Basic configuration
+OLLAMA_API=http://localhost:11434
+SILENCE_STARTUP=true
+
+# Code feedback enhancements
+CODE_FEEDBACK_TIMEOUT=90000
+CODE_FEEDBACK_MAX_LENGTH=75000
+ENABLE_SECURITY_LOGGING=true
+```
 
 ### Error Handling
 
@@ -491,6 +514,84 @@ Once connected to Claude Desktop, these tools become available:
 | `validate_config`  | Validate MCP server configuration       |
 
 ### Tool Usage Examples
+
+#### AI Code Feedback (Enhanced) 🚀
+
+The AI code feedback tool provides comprehensive code analysis with structured, professional output.
+
+```javascript
+// Security analysis with Ollama (full AI-powered feedback)
+ai_code_feedback({
+  code: `
+    function authenticateUser(username, password) {
+      const query = "SELECT * FROM users WHERE username = '" + username + 
+                    "' AND password = '" + password + "'";
+      return database.query(query);
+    }
+  `,
+  language: "javascript",
+  provider: "ollama",
+  model: "codellama:7b",
+  feedbackType: "security"
+})
+
+// Performance analysis with enhanced placeholder providers
+ai_code_feedback({
+  code: `
+    def process_data(items):
+        results = []
+        for i in range(len(items)):
+            for j in range(len(items)):
+                if items[i] > items[j]:
+                    results.append(items[i])
+        return results
+  `,
+  language: "python",
+  provider: "github",
+  feedbackType: "performance"
+})
+
+// Style analysis with structured output
+ai_code_feedback({
+  code: `
+    public class UserManager{
+    private List<User>users;
+    public void addUser(String n,int a){
+    users.add(new User(n,a));
+    }
+    }
+  `,
+  language: "java",
+  provider: "claude",
+  feedbackType: "style"
+})
+```
+
+**Enhanced Output Format:**
+```markdown
+## 🔍 Analysis Summary
+Brief overview of findings and code quality assessment.
+
+## ⚠️ Issues Identified
+- **Priority Level**: High/Medium/Low
+- **Issue**: Specific problem description
+- **Line/Section**: Location in code
+- **Impact**: Potential consequences
+
+## ✅ Positive Aspects
+Recognition of good practices and well-implemented features.
+
+## 🔧 Recommendations
+1. **Immediate fixes** (critical issues)
+2. **Improvements** (optimization opportunities)
+3. **Best practices** (long-term maintainability)
+
+## 📚 Code Examples
+Improved code snippets and alternatives.
+
+## 🏷️ Overall Rating
+Quality assessment: Excellent/Good/Fair/Needs Improvement
+```
 
 #### Terminal Operations
 ```javascript
