@@ -389,6 +389,11 @@ Requires-Dist: sqlalchemy>=2.0.25; extra == "database"
 Requires-Dist: psycopg2-binary>=2.9.9; extra == "database"
 Requires-Dist: pymongo>=4.6.1; extra == "database"
 Requires-Dist: redis>=5.0.1; extra == "database"
+Provides-Extra: browser
+Requires-Dist: playwright>=1.40.0; extra == "browser"
+Provides-Extra: github
+Requires-Dist: PyGithub>=2.1.1; extra == "github"
+Requires-Dist: requests>=2.31.0; extra == "github"
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.4; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.23.2; extra == "dev"
@@ -400,7 +405,7 @@ Requires-Dist: flake8>=7.0.0; extra == "dev"
 Requires-Dist: mypy>=1.8.0; extra == "dev"
 Requires-Dist: pre-commit>=3.6.0; extra == "dev"
 Provides-Extra: all
-Requires-Dist: ollama-mcp-devops-server[cloud,database,dev,devops,monitoring,security]; extra == "all"
+Requires-Dist: ollama-mcp-devops-server[browser,cloud,database,dev,devops,github,monitoring,security]; extra == "all"
 Dynamic: license-file
 
 # Ollama-MCP-Server

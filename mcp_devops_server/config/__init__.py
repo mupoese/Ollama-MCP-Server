@@ -3,6 +3,7 @@
 from .settings import (
     DevOpsConfig,
     OllamaConfig,
+    OllamaAgentConfig,
     SecurityConfig,
     ToolConfig,
     InfrastructureConfig,
@@ -14,7 +15,8 @@ from .settings import (
 
 __all__ = [
     "DevOpsConfig",
-    "OllamaConfig", 
+    "OllamaConfig",
+    "OllamaAgentConfig", 
     "SecurityConfig",
     "ToolConfig",
     "InfrastructureConfig",

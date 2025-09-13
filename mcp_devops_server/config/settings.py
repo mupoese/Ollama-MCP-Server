@@ -8,17 +8,60 @@ variable support, validation, and type safety using Pydantic.
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, field_validator
-from pydantic_settings import BaseSettings
+try:
+    from pydantic import BaseModel, Field, field_validator
+except ImportError:
+    from pydantic import BaseModel, Field
+    # For older Pydantic versions
+    def field_validator(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    # Fallback to older import
+    from pydantic import BaseSettings
+
 import yaml
 
 
-class OllamaConfig(BaseSettings):
-    """Ollama-specific configuration settings"""
+class OllamaAgentConfig(BaseModel):
+    """Configuration for individual Ollama agent/role"""
     
+    api_url: str = Field(description="Ollama API endpoint URL for this agent")
+    api_key: Optional[str] = Field(default=None, description="API key for this endpoint")
+    model: str = Field(description="Model to use for this agent")
+    role: str = Field(description="Role/purpose of this agent")
+    timeout: int = Field(default=30, description="Request timeout in seconds")
+    max_retries: int = Field(default=3, description="Maximum retry attempts")
+    
+    @field_validator('role')
+    @classmethod
+    def validate_role(cls, v):
+        valid_roles = [
+            'primary', 'secondary', 'tertiary', 'quaternary', 
+            'quinary', 'senary', 'septenary', 'octonary',
+            'analyst', 'reviewer', 'validator', 'executor',
+            'monitor', 'coordinator', 'specialist', 'assistant'
+        ]
+        if v.lower() not in valid_roles:
+            raise ValueError(f'role must be one of: {", ".join(valid_roles)}')
+        return v.lower()
+
+
+class OllamaConfig(BaseSettings):
+    """MCP Ollama Server configuration with multi-agent support"""
+    
+    # Primary endpoint (backward compatibility)
     api_url: str = Field(
         default="http://localhost:11434",
-        description="Ollama API endpoint URL"
+        description="Primary Ollama API endpoint URL"
+    )
+    api_key: Optional[str] = Field(
+        default=None,
+        description="Primary API key"
     )
     timeout: int = Field(
         default=30,
@@ -32,6 +75,98 @@ class OllamaConfig(BaseSettings):
         default="llama2",
         description="Default model for Ollama operations"
     )
+    
+    # Multi-agent configuration
+    agents: Dict[str, OllamaAgentConfig] = Field(
+        default_factory=dict,
+        description="Configuration for multiple Ollama agents/endpoints"
+    )
+    
+    # Auto-configure standard agents from environment
+    agent_2_url: Optional[str] = Field(default=None, description="Second agent API URL")
+    agent_2_key: Optional[str] = Field(default=None, description="Second agent API key")
+    agent_2_model: str = Field(default="llama2", description="Second agent model")
+    agent_2_role: str = Field(default="secondary", description="Second agent role")
+    
+    agent_3_url: Optional[str] = Field(default=None, description="Third agent API URL")
+    agent_3_key: Optional[str] = Field(default=None, description="Third agent API key")
+    agent_3_model: str = Field(default="llama2", description="Third agent model")
+    agent_3_role: str = Field(default="tertiary", description="Third agent role")
+    
+    agent_4_url: Optional[str] = Field(default=None, description="Fourth agent API URL")
+    agent_4_key: Optional[str] = Field(default=None, description="Fourth agent API key")
+    agent_4_model: str = Field(default="llama2", description="Fourth agent model")
+    agent_4_role: str = Field(default="quaternary", description="Fourth agent role")
+    
+    agent_5_url: Optional[str] = Field(default=None, description="Fifth agent API URL")
+    agent_5_key: Optional[str] = Field(default=None, description="Fifth agent API key")
+    agent_5_model: str = Field(default="llama2", description="Fifth agent model")
+    agent_5_role: str = Field(default="quinary", description="Fifth agent role")
+    
+    agent_6_url: Optional[str] = Field(default=None, description="Sixth agent API URL")
+    agent_6_key: Optional[str] = Field(default=None, description="Sixth agent API key")
+    agent_6_model: str = Field(default="llama2", description="Sixth agent model")
+    agent_6_role: str = Field(default="senary", description="Sixth agent role")
+    
+    agent_7_url: Optional[str] = Field(default=None, description="Seventh agent API URL")
+    agent_7_key: Optional[str] = Field(default=None, description="Seventh agent API key")
+    agent_7_model: str = Field(default="llama2", description="Seventh agent model")
+    agent_7_role: str = Field(default="septenary", description="Seventh agent role")
+    
+    agent_8_url: Optional[str] = Field(default=None, description="Eighth agent API URL")
+    agent_8_key: Optional[str] = Field(default=None, description="Eighth agent API key")
+    agent_8_model: str = Field(default="llama2", description="Eighth agent model")
+    agent_8_role: str = Field(default="octonary", description="Eighth agent role")
+    
+    def model_post_init(self, __context) -> None:
+        """Auto-configure agents from environment variables"""
+        # Add primary agent
+        if not self.agents.get('primary'):
+            self.agents['primary'] = OllamaAgentConfig(
+                api_url=self.api_url,
+                api_key=self.api_key,
+                model=self.default_model,
+                role='primary',
+                timeout=self.timeout,
+                max_retries=self.max_retries
+            )
+        
+        # Auto-configure additional agents from environment
+        agent_configs = [
+            (2, self.agent_2_url, self.agent_2_key, self.agent_2_model, self.agent_2_role),
+            (3, self.agent_3_url, self.agent_3_key, self.agent_3_model, self.agent_3_role),
+            (4, self.agent_4_url, self.agent_4_key, self.agent_4_model, self.agent_4_role),
+            (5, self.agent_5_url, self.agent_5_key, self.agent_5_model, self.agent_5_role),
+            (6, self.agent_6_url, self.agent_6_key, self.agent_6_model, self.agent_6_role),
+            (7, self.agent_7_url, self.agent_7_key, self.agent_7_model, self.agent_7_role),
+            (8, self.agent_8_url, self.agent_8_key, self.agent_8_model, self.agent_8_role),
+        ]
+        
+        for num, url, key, model, role in agent_configs:
+            if url and not self.agents.get(f'agent_{num}'):
+                self.agents[f'agent_{num}'] = OllamaAgentConfig(
+                    api_url=url,
+                    api_key=key,
+                    model=model,
+                    role=role,
+                    timeout=self.timeout,
+                    max_retries=self.max_retries
+                )
+    
+    def get_agent_by_role(self, role: str) -> Optional[OllamaAgentConfig]:
+        """Get agent configuration by role"""
+        for agent in self.agents.values():
+            if agent.role == role.lower():
+                return agent
+        return None
+    
+    def get_available_agents(self) -> List[str]:
+        """Get list of available agent names"""
+        return list(self.agents.keys())
+    
+    def get_agents_by_role(self) -> Dict[str, OllamaAgentConfig]:
+        """Get agents organized by role"""
+        return {agent.role: agent for agent in self.agents.values()}
     
     class Config:
         env_prefix = "OLLAMA_"

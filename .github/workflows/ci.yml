@@ -1,94 +1,244 @@
-name: CI/CD Pipeline
+name: MCP Ollama Server CI/CD Pipeline
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.13"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/mcp-ollama-server
 
 jobs:
   lint-and-test:
+    name: Lint and Test Python Code
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        node-version: [20.x, 18.x]
+        python-version: ["3.12", "3.13"]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v5
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
 
-    - name: Run linter
-      run: npm run lint
+    - name: Run linting with black
+      run: black --check --diff mcp_devops_server/ tests/
 
-    - name: Run tests
-      run: npm run test:coverage
+    - name: Run linting with flake8
+      run: flake8 mcp_devops_server/ tests/
+
+    - name: Run type checking with mypy
+      run: mypy mcp_devops_server/
+      continue-on-error: true  # Type hints are still being added
+
+    - name: Run tests with pytest
+      run: pytest --cov=mcp_devops_server --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v4
       with:
-        files: ./coverage/lcov.info
+        files: ./coverage.xml
         flags: unittests
-        name: codecov-umbrella
+        name: codecov-${{ matrix.python-version }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[all]
+
+    - name: Setup Docker for testing
+      uses: docker/setup-buildx-action@v3
+
+    - name: Test MCP server functionality
+      run: |
+        # Test CLI commands
+        python -m mcp_devops_server.main --help
+        python -m mcp_devops_server.main health
+        python -m mcp_devops_server.main list-tools
+        python -m mcp_devops_server.main validate-config
+
+    - name: Test tool registration and execution
+      run: pytest tests/integration/ -v --timeout=30
 
   docker-build:
+    name: Build and Test Docker Images
     runs-on: ubuntu-latest
     needs: lint-and-test
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Login to Docker Hub
+    - name: Login to Container Registry
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build Docker image
-      run: docker build -t ollama-mcp-server:test -t docker.io/mup1987/ollama-mcp-server:latest .
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.python
+        target: production
+        push: false
+        tags: mcp-ollama-server:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
 
     - name: Test Docker image
       run: |
         # Test that the image can be created and starts properly
-        docker run --rm --entrypoint="/bin/sh" ollama-mcp-server:test -c "node --version"
+        docker run --rm mcp-ollama-server:test --help
+        docker run --rm mcp-ollama-server:test health
+        docker run --rm mcp-ollama-server:test list-tools
 
-    - name: Push to Docker Hub
+    - name: Build and push production image
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: docker push docker.io/mup1987/ollama-mcp-server:latest
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.python
+        target: production
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
   security-scan:
+    name: Security Scanning
     runs-on: ubuntu-latest
     needs: lint-and-test
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v5
+    - name: Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v5
       with:
-        node-version: '20.x'
-        cache: 'npm'
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+        pip install safety bandit semgrep
 
-    - name: Run security audit
-      run: npm audit --audit-level moderate
+    - name: Run dependency security scan with safety
+      run: safety check --json
 
-    - name: Run dependency check
-      run: npx depcheck
+    - name: Run code security scan with bandit
+      run: bandit -r mcp_devops_server/ -f json
+      continue-on-error: true
+
+    - name: Run SAST with Semgrep
+      run: semgrep --config=auto mcp_devops_server/
+      continue-on-error: true
+
+    - name: Check for security vulnerabilities in requirements
+      run: |
+        pip-audit --desc --format=json
+      continue-on-error: true
+
+  release:
+    name: Create Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, integration-tests, docker-build, security-scan]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Build Python package
+      run: |
+        python -m pip install --upgrade pip build
+        python -m build
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Extract version from pyproject.toml
+        VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        echo "version=v$VERSION" >> $GITHUB_OUTPUT
+        
+        # Generate changelog from recent commits
+        CHANGELOG=$(git log --pretty=format:"- %s" --since="7 days ago" | head -20)
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.changelog.outputs.version }}
+        name: "MCP Ollama Server ${{ steps.changelog.outputs.version }}"
+        body: |
+          ## Changes in this release:
+          ${{ steps.changelog.outputs.changelog }}
+          
+          ## Docker Images
+          - `ghcr.io/${{ github.repository }}/mcp-ollama-server:latest`
+          - `ghcr.io/${{ github.repository }}/mcp-ollama-server:${{ steps.changelog.outputs.version }}`
+        files: dist/*
+        draft: false
+        prerelease: false

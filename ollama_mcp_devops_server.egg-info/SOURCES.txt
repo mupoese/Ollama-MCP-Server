@@ -10,8 +10,10 @@ mcp_devops_server/server/mcp_server.py
 mcp_devops_server/tools/__init__.py
 mcp_devops_server/tools/base_tool.py
 mcp_devops_server/tools/git.py
+mcp_devops_server/tools/github.py
 mcp_devops_server/tools/infrastructure.py
 mcp_devops_server/tools/ollama.py
+mcp_devops_server/tools/playwright.py
 mcp_devops_server/tools/registry.py
 mcp_devops_server/utils/__init__.py
 mcp_devops_server/utils/logging.py

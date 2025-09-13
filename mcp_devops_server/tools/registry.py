@@ -320,11 +320,15 @@ def auto_discover_tools() -> None:
     
     try:
         # Ollama tools
-        from .ollama import OllamaListModels, OllamaChat, OllamaGenerate, OllamaPullModel
+        from .ollama import (
+            OllamaListModels, OllamaChat, OllamaGenerate, OllamaPullModel,
+            OllamaManageAgents
+        )
         registry.register_tool(OllamaListModels, "ollama")
         registry.register_tool(OllamaChat, "ollama")
         registry.register_tool(OllamaGenerate, "ollama")
         registry.register_tool(OllamaPullModel, "ollama")
+        registry.register_tool(OllamaManageAgents, "ollama")
         
     except ImportError as e:
         logger.warning("Could not import Ollama tools", error=str(e))
@@ -349,6 +353,44 @@ def auto_discover_tools() -> None:
         
     except ImportError as e:
         logger.warning("Could not import Git tools", error=str(e))
+    
+    try:
+        # GitHub tools
+        from .github import (
+            GitHubGetFileContents, GitHubGetCommit, GitHubListCommits,
+            GitHubListBranches, GitHubSearchRepositories, GitHubGetIssue,
+            GitHubListPullRequests
+        )
+        registry.register_tool(GitHubGetFileContents, "github")
+        registry.register_tool(GitHubGetCommit, "github")
+        registry.register_tool(GitHubListCommits, "github")
+        registry.register_tool(GitHubListBranches, "github")
+        registry.register_tool(GitHubSearchRepositories, "github")
+        registry.register_tool(GitHubGetIssue, "github")
+        registry.register_tool(GitHubListPullRequests, "github")
+        
+    except ImportError as e:
+        logger.warning("Could not import GitHub tools", error=str(e))
+    
+    try:
+        # Playwright browser automation tools
+        from .playwright import (
+            PlaywrightNavigate, PlaywrightTakeScreenshot, PlaywrightClick,
+            PlaywrightType, PlaywrightWaitFor, PlaywrightGetText,
+            PlaywrightFillForm, PlaywrightEvaluate, PlaywrightGetPageInfo
+        )
+        registry.register_tool(PlaywrightNavigate, "browser")
+        registry.register_tool(PlaywrightTakeScreenshot, "browser")
+        registry.register_tool(PlaywrightClick, "browser")
+        registry.register_tool(PlaywrightType, "browser")
+        registry.register_tool(PlaywrightWaitFor, "browser")
+        registry.register_tool(PlaywrightGetText, "browser")
+        registry.register_tool(PlaywrightFillForm, "browser")
+        registry.register_tool(PlaywrightEvaluate, "browser")
+        registry.register_tool(PlaywrightGetPageInfo, "browser")
+        
+    except ImportError as e:
+        logger.warning("Could not import Playwright tools", error=str(e))
     
     # Log final statistics
     stats = registry.get_tool_statistics()
