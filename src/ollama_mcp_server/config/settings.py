@@ -73,12 +73,9 @@ class OllamaConfig(BaseSettings):
 
     # Primary endpoint (backward compatibility)
     api_url: str = Field(
-        default="http://localhost:11434",
-        description="Primary Ollama API endpoint URL"
+        default="http://localhost:11434", description="Primary Ollama API endpoint URL"
     )
-    api_key: Optional[str] = Field(
-        default=None, description="Primary API key"
-    )
+    api_key: Optional[str] = Field(default=None, description="Primary API key")
     timeout: int = Field(default=30, description="Request timeout in seconds")
     max_retries: int = Field(default=3, description="Maximum number of retry attempts")
     default_model: str = Field(

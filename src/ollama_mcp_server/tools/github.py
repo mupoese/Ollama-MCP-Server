@@ -82,10 +82,8 @@ class GitHubBaseTool(BaseTool):
                     except:
                         pass
 
-                    error_msg = error_data.get('message', error_text)
-                    raise Exception(
-                        f"GitHub API error {response.status}: {error_msg}"
-                    )
+                    error_msg = error_data.get("message", error_text)
+                    raise Exception(f"GitHub API error {response.status}: {error_msg}")
         except aiohttp.ClientError as e:
             raise Exception(f"GitHub API request failed: {str(e)}")
 
