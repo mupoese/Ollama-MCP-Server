@@ -9,17 +9,15 @@ import asyncio
 import signal
 import sys
 from typing import Any, Dict, List, Optional
-import structlog
 
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.server.session import ServerSession
 
 from ..config import get_config, DevOpsConfig
 from ..tools.registry import get_tool_registry, auto_discover_tools
 from ..tools.base_tool import ToolExecutionContext
-from ..utils.logging import setup_logging, get_app_logger, audit_logger
+from ..utils.logging import setup_logging, get_app_logger
 
 
 class MCPDevOpsServer:

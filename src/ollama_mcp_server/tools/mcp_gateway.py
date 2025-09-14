@@ -6,17 +6,14 @@ making this server act as a gateway/proxy that can route requests to multiple
 MCP servers and aggregate their tools and resources.
 """
 
-import asyncio
-import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List
 import structlog
 
 from mcp.client.session_group import ClientSessionGroup
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.sse import sse_client
-from mcp import types
 
-from .base_tool import BaseTool, ToolResult, ToolExecutionContext
+from .base_tool import BaseTool
 
 
 logger = structlog.get_logger()
@@ -61,7 +58,9 @@ class MCPGatewayConnect(BaseTool):
             "stdio_command": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "Command and arguments for stdio transport (e.g., ['node', 'server.js'])",
+                "description": (
+                    "Command and arguments for stdio transport (e.g., ['node', 'server.js'])"
+                ),
             },
             "sse_url": {
                 "type": "string",

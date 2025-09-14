@@ -6,8 +6,7 @@ infrastructure components.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
-import structlog
+from typing import Any, Dict
 
 try:
     import docker
@@ -19,7 +18,6 @@ except ImportError:
 
 try:
     from kubernetes import client, config
-    from kubernetes.client.rest import ApiException
 
     KUBERNETES_AVAILABLE = True
 except ImportError:

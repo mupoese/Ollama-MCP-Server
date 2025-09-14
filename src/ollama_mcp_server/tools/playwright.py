@@ -7,8 +7,7 @@ for web testing, scraping, and automation tasks.
 
 import asyncio
 import base64
-from typing import Any, Dict, List, Optional, Union
-import structlog
+from typing import Any, Dict
 
 from .base_tool import BaseTool
 
@@ -29,7 +28,8 @@ class PlaywrightBaseTool(BaseTool):
             from playwright.async_api import async_playwright
         except ImportError:
             raise Exception(
-                "Playwright not installed. Install with: pip install playwright && playwright install"
+                "Playwright not installed. Install with: "
+                "pip install playwright && playwright install"
             )
 
         if self.playwright is None:

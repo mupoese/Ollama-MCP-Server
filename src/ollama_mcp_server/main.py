@@ -9,9 +9,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 import click
-import structlog
 
-from .config import DevOpsConfig, get_config, set_config
+from .config import DevOpsConfig, set_config
 from .server.mcp_server import MCPDevOpsServer
 from .utils.logging import setup_logging, get_app_logger
 

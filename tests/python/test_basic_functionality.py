@@ -6,15 +6,12 @@ from Node.js is working correctly.
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock, patch
-from pathlib import Path
 
-from mcp_devops_server.config import DevOpsConfig, get_config
-from mcp_devops_server.tools.registry import ToolRegistry, get_tool_registry
-from mcp_devops_server.tools.base_tool import BaseTool, ToolResult
-from mcp_devops_server.tools.ollama import OllamaListModels, OllamaChat
-from mcp_devops_server.server.mcp_server import MCPDevOpsServer
+from ollama_mcp_server.config import DevOpsConfig
+from ollama_mcp_server.tools.registry import ToolRegistry
+from ollama_mcp_server.tools.base_tool import BaseTool
+from ollama_mcp_server.tools.ollama import OllamaListModels, OllamaChat
+from ollama_mcp_server.server.mcp_server import MCPDevOpsServer
 
 
 class TestDevOpsConfig:

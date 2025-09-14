@@ -1,7 +1,8 @@
 """
 MCP DevOps Server
 
-A Python-based Model Context Protocol server that provides AI models with access
+A Python-based Model Context Protocol server that provides AI models with
+access
 to essential DevOps tools through a unified interface. This server maintains
 compatibility with Ollama while expanding to include comprehensive DevOps
 tooling capabilities.

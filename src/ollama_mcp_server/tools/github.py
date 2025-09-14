@@ -6,12 +6,10 @@ management, workflow automation, and development operations.
 """
 
 import aiohttp
-import asyncio
 import base64
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 from urllib.parse import urlencode
-import structlog
 
 from .base_tool import BaseTool
 
@@ -84,8 +82,9 @@ class GitHubBaseTool(BaseTool):
                     except:
                         pass
 
+                    error_msg = error_data.get('message', error_text)
                     raise Exception(
-                        f"GitHub API error {response.status}: {error_data.get('message', error_text)}"
+                        f"GitHub API error {response.status}: {error_msg}"
                     )
         except aiohttp.ClientError as e:
             raise Exception(f"GitHub API request failed: {str(e)}")
@@ -487,7 +486,9 @@ class GitHubSearchRepositories(GitHubBaseTool):
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Search query (e.g., 'machine learning language:python stars:>1000')",
+                    "description": (
+                        "Search query (e.g., 'machine learning language:python stars:>1000')"
+                    ),
                 },
                 "per_page": {
                     "type": "integer",

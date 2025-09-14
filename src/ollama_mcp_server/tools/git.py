@@ -5,14 +5,12 @@ This module provides tools for Git operations and repository management.
 """
 
 import asyncio
-import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-import structlog
+from typing import Any, Dict
 
 try:
     import git
-    from git import Repo, GitCommandError
+    from git import Repo
 
     GIT_AVAILABLE = True
 except ImportError:

@@ -7,11 +7,9 @@ maintaining compatibility with the original Node.js implementation.
 
 import aiohttp
 import asyncio
-from typing import Any, Dict, List, Optional
-import structlog
+from typing import Any, Dict, Optional
 
 from .base_tool import BaseTool
-from ..config import get_config
 
 
 class OllamaBaseTool(BaseTool):
@@ -90,7 +88,8 @@ class OllamaBaseTool(BaseTool):
                     else:
                         error_text = await response.text()
                         raise Exception(
-                            f"Ollama API error {response.status} for agent '{agent_name}': {error_text}"
+                            f"Ollama API error {response.status} for agent "
+                            f"'{agent_name}': {error_text}"
                         )
             except asyncio.TimeoutError:
                 if attempt == agent_config.max_retries:
@@ -98,7 +97,7 @@ class OllamaBaseTool(BaseTool):
                         f"Ollama API request timed out for agent '{agent_name}'"
                     )
                 await asyncio.sleep(2**attempt)  # Exponential backoff
-            except Exception as e:
+            except Exception:
                 if attempt == agent_config.max_retries:
                     raise
                 await asyncio.sleep(2**attempt)
@@ -601,7 +600,10 @@ class OllamaManageAgents(OllamaBaseTool):
                     "has_api_key": bool(agent_config.api_key),
                 },
                 "test_result": test_result,
-                "note": "To persist this configuration, set environment variables or update config file",
+                "note": (
+                    "To persist this configuration, set environment variables "
+                    "or update config file"
+                ),
             }
         except Exception as e:
             return {
@@ -625,7 +627,10 @@ class OllamaManageAgents(OllamaBaseTool):
             return {
                 "status": "info",
                 "message": f"Agent '{agent_name}' found in configuration",
-                "note": "To remove this agent, unset the corresponding environment variables or update config file",
+                "note": (
+                    "To remove this agent, unset the corresponding environment "
+                    "variables or update config file"
+                ),
                 "env_vars_to_unset": [
                     f"OLLAMA_AGENT_{agent_name.upper()}_URL",
                     f"OLLAMA_AGENT_{agent_name.upper()}_KEY",

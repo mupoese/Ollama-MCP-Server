@@ -8,7 +8,7 @@ the common interface and functionality.
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
 import structlog
 
@@ -79,19 +79,16 @@ class BaseTool(ABC):
     @abstractmethod
     def name(self) -> str:
         """Tool name identifier"""
-        pass
 
     @property
     @abstractmethod
     def description(self) -> str:
         """Tool description"""
-        pass
 
     @property
     @abstractmethod
     def input_schema(self) -> Dict[str, Any]:
         """JSON schema for tool input validation"""
-        pass
 
     @property
     def schema(self) -> ToolSchema:
@@ -116,7 +113,6 @@ class BaseTool(ABC):
         Raises:
             Exception: Any exception during execution
         """
-        pass
 
     def validate_arguments(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """
