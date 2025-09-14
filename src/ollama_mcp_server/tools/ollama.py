@@ -16,33 +16,38 @@ from ..config import get_config
 
 class OllamaBaseTool(BaseTool):
     """Base class for Ollama tools with common functionality"""
-    
+
     def __init__(self):
         super().__init__()
         self.ollama_config = self.config.ollama
         self.sessions: Dict[str, Optional[aiohttp.ClientSession]] = {}
-    
+
     async def get_session(self, agent_name: str = "primary") -> aiohttp.ClientSession:
         """Get or create HTTP session for specific Ollama agent"""
-        if agent_name not in self.sessions or self.sessions[agent_name] is None or self.sessions[agent_name].closed:
+        if (
+            agent_name not in self.sessions
+            or self.sessions[agent_name] is None
+            or self.sessions[agent_name].closed
+        ):
             agent_config = self.ollama_config.agents.get(agent_name)
             if not agent_config:
                 # Fallback to primary if agent not found
                 agent_config = self.ollama_config.agents.get("primary")
                 if not agent_config:
-                    raise Exception(f"No Ollama agent configuration found for '{agent_name}' or primary")
-            
+                    raise Exception(
+                        f"No Ollama agent configuration found for '{agent_name}' or primary"
+                    )
+
             timeout = aiohttp.ClientTimeout(total=agent_config.timeout)
             headers = {}
             if agent_config.api_key:
                 headers["Authorization"] = f"Bearer {agent_config.api_key}"
-            
+
             self.sessions[agent_name] = aiohttp.ClientSession(
-                timeout=timeout,
-                headers=headers
+                timeout=timeout, headers=headers
             )
         return self.sessions[agent_name]
-    
+
     async def make_ollama_request(
         self,
         endpoint: str,
@@ -52,16 +57,16 @@ class OllamaBaseTool(BaseTool):
     ) -> Dict[str, Any]:
         """
         Make a request to the Ollama API using specified agent
-        
+
         Args:
             endpoint: API endpoint (e.g., "/api/tags")
             method: HTTP method
             data: Request data for POST requests
             agent_name: Name of the agent/endpoint to use
-            
+
         Returns:
             API response data
-            
+
         Raises:
             Exception: If request fails
         """
@@ -70,11 +75,13 @@ class OllamaBaseTool(BaseTool):
             # Fallback to primary
             agent_config = self.ollama_config.agents.get("primary")
             if not agent_config:
-                raise Exception(f"No Ollama agent configuration found for '{agent_name}' or primary")
-        
+                raise Exception(
+                    f"No Ollama agent configuration found for '{agent_name}' or primary"
+                )
+
         session = await self.get_session(agent_name)
         url = f"{agent_config.api_url.rstrip('/')}{endpoint}"
-        
+
         for attempt in range(agent_config.max_retries + 1):
             try:
                 async with session.request(method, url, json=data) as response:
@@ -87,13 +94,15 @@ class OllamaBaseTool(BaseTool):
                         )
             except asyncio.TimeoutError:
                 if attempt == agent_config.max_retries:
-                    raise Exception(f"Ollama API request timed out for agent '{agent_name}'")
-                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    raise Exception(
+                        f"Ollama API request timed out for agent '{agent_name}'"
+                    )
+                await asyncio.sleep(2**attempt)  # Exponential backoff
             except Exception as e:
                 if attempt == agent_config.max_retries:
                     raise
-                await asyncio.sleep(2 ** attempt)
-    
+                await asyncio.sleep(2**attempt)
+
     async def health_check(self, agent_name: str = "primary") -> bool:
         """Check if Ollama service is available for specific agent"""
         try:
@@ -101,7 +110,7 @@ class OllamaBaseTool(BaseTool):
             return True
         except Exception:
             return False
-    
+
     async def cleanup(self):
         """Clean up all HTTP sessions"""
         for session in self.sessions.values():
@@ -112,15 +121,15 @@ class OllamaBaseTool(BaseTool):
 
 class OllamaListModels(OllamaBaseTool):
     """List all available Ollama models"""
-    
+
     @property
     def name(self) -> str:
         return "ollama_list_models"
-    
+
     @property
     def description(self) -> str:
         return "List all available Ollama models on the server"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -128,26 +137,28 @@ class OllamaListModels(OllamaBaseTool):
             "properties": {},
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the list models command"""
         self.logger.info("Listing available Ollama models")
-        
+
         response = await self.make_ollama_request("/api/tags")
-        
+
         models = response.get("models", [])
-        
+
         # Format the response
         formatted_models = []
         for model in models:
-            formatted_models.append({
-                "name": model.get("name", ""),
-                "size": model.get("size", 0),
-                "digest": model.get("digest", ""),
-                "modified_at": model.get("modified_at", ""),
-                "details": model.get("details", {}),
-            })
-        
+            formatted_models.append(
+                {
+                    "name": model.get("name", ""),
+                    "size": model.get("size", 0),
+                    "digest": model.get("digest", ""),
+                    "modified_at": model.get("modified_at", ""),
+                    "details": model.get("details", {}),
+                }
+            )
+
         return {
             "models": formatted_models,
             "count": len(formatted_models),
@@ -156,15 +167,15 @@ class OllamaListModels(OllamaBaseTool):
 
 class OllamaChat(OllamaBaseTool):
     """Chat with an Ollama model using the chat API"""
-    
+
     @property
     def name(self) -> str:
         return "ollama_chat"
-    
+
     @property
     def description(self) -> str:
         return "Chat with an Ollama model using the chat API"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -218,7 +229,7 @@ class OllamaChat(OllamaBaseTool):
                             "description": "Controls randomness in responses",
                         },
                         "top_p": {
-                            "type": "number", 
+                            "type": "number",
                             "minimum": 0,
                             "maximum": 1,
                             "description": "Controls diversity of responses",
@@ -235,7 +246,7 @@ class OllamaChat(OllamaBaseTool):
             "required": ["model", "messages"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chat command"""
         model = arguments["model"]
@@ -243,7 +254,7 @@ class OllamaChat(OllamaBaseTool):
         agent = arguments.get("agent", "primary")
         stream = arguments.get("stream", False)
         options = arguments.get("options", {})
-        
+
         self.logger.info(
             "Starting Ollama chat",
             model=model,
@@ -251,21 +262,21 @@ class OllamaChat(OllamaBaseTool):
             message_count=len(messages),
             stream=stream,
         )
-        
+
         request_data = {
             "model": model,
             "messages": messages,
             "stream": stream,
             "options": options,
         }
-        
+
         response = await self.make_ollama_request(
             "/api/chat",
             method="POST",
             data=request_data,
             agent_name=agent,
         )
-        
+
         return {
             "message": response.get("message", {}),
             "model": response.get("model", model),
@@ -283,15 +294,15 @@ class OllamaChat(OllamaBaseTool):
 
 class OllamaGenerate(OllamaBaseTool):
     """Generate text using an Ollama model"""
-    
+
     @property
     def name(self) -> str:
         return "ollama_generate"
-    
+
     @property
     def description(self) -> str:
         return "Generate text using an Ollama model with a single prompt"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -340,34 +351,34 @@ class OllamaGenerate(OllamaBaseTool):
             "required": ["model", "prompt"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the generate command"""
         model = arguments["model"]
         prompt = arguments["prompt"]
         stream = arguments.get("stream", False)
         options = arguments.get("options", {})
-        
+
         self.logger.info(
             "Starting Ollama generation",
             model=model,
             prompt_length=len(prompt),
             stream=stream,
         )
-        
+
         request_data = {
             "model": model,
             "prompt": prompt,
             "stream": stream,
             "options": options,
         }
-        
+
         response = await self.make_ollama_request(
             "/api/generate",
             method="POST",
             data=request_data,
         )
-        
+
         return {
             "response": response.get("response", ""),
             "model": response.get("model", model),
@@ -385,15 +396,15 @@ class OllamaGenerate(OllamaBaseTool):
 
 class OllamaPullModel(OllamaBaseTool):
     """Pull/download an Ollama model"""
-    
+
     @property
     def name(self) -> str:
         return "ollama_pull_model"
-    
+
     @property
     def description(self) -> str:
         return "Pull/download an Ollama model to the local server"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -413,29 +424,29 @@ class OllamaPullModel(OllamaBaseTool):
             "required": ["name"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the pull model command"""
         model_name = arguments["name"]
         stream = arguments.get("stream", False)
-        
+
         self.logger.info(
             "Starting Ollama model pull",
             model_name=model_name,
             stream=stream,
         )
-        
+
         request_data = {
             "name": model_name,
             "stream": stream,
         }
-        
+
         response = await self.make_ollama_request(
             "/api/pull",
             method="POST",
             data=request_data,
         )
-        
+
         return {
             "status": response.get("status", ""),
             "digest": response.get("digest", ""),
@@ -446,15 +457,15 @@ class OllamaPullModel(OllamaBaseTool):
 
 class OllamaManageAgents(OllamaBaseTool):
     """Manage Ollama agents and endpoints for agentic responses"""
-    
+
     @property
     def name(self) -> str:
         return "ollama_manage_agents"
-    
+
     @property
     def description(self) -> str:
         return "Manage Ollama agents, endpoints, and API keys for multi-agent agentic responses"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -489,11 +500,11 @@ class OllamaManageAgents(OllamaBaseTool):
             "required": ["action"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the agent management command"""
         action = arguments["action"]
-        
+
         if action == "list":
             return await self._list_agents()
         elif action == "add":
@@ -506,7 +517,7 @@ class OllamaManageAgents(OllamaBaseTool):
             return await self._configure_agent(arguments)
         else:
             raise ValueError(f"Unknown action: {action}")
-    
+
     async def _list_agents(self) -> Dict[str, Any]:
         """List all configured agents"""
         agents = []
@@ -516,43 +527,57 @@ class OllamaManageAgents(OllamaBaseTool):
                 health_status = await self.health_check(name)
             except Exception:
                 health_status = False
-            
-            agents.append({
-                "name": name,
-                "api_url": agent_config.api_url,
-                "model": agent_config.model,
-                "role": agent_config.role,
-                "timeout": agent_config.timeout,
-                "max_retries": agent_config.max_retries,
-                "has_api_key": bool(agent_config.api_key),
-                "healthy": health_status,
-            })
-        
+
+            agents.append(
+                {
+                    "name": name,
+                    "api_url": agent_config.api_url,
+                    "model": agent_config.model,
+                    "role": agent_config.role,
+                    "timeout": agent_config.timeout,
+                    "max_retries": agent_config.max_retries,
+                    "has_api_key": bool(agent_config.api_key),
+                    "healthy": health_status,
+                }
+            )
+
         return {
             "agents": agents,
             "total_agents": len(agents),
             "available_roles": [
-                'primary', 'secondary', 'tertiary', 'quaternary', 
-                'quinary', 'senary', 'septenary', 'octonary',
-                'analyst', 'reviewer', 'validator', 'executor',
-                'monitor', 'coordinator', 'specialist', 'assistant'
+                "primary",
+                "secondary",
+                "tertiary",
+                "quaternary",
+                "quinary",
+                "senary",
+                "septenary",
+                "octonary",
+                "analyst",
+                "reviewer",
+                "validator",
+                "executor",
+                "monitor",
+                "coordinator",
+                "specialist",
+                "assistant",
             ],
         }
-    
+
     async def _add_agent(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Add or update an agent configuration"""
         agent_name = arguments.get("agent_name")
         if not agent_name:
             raise ValueError("agent_name is required for add action")
-        
+
         api_url = arguments.get("api_url")
         if not api_url:
             raise ValueError("api_url is required for add action")
-        
+
         # This would typically update persistent configuration
         # For now, we'll just validate the configuration
         from ..config.settings import OllamaAgentConfig
-        
+
         try:
             agent_config = OllamaAgentConfig(
                 api_url=api_url,
@@ -562,10 +587,10 @@ class OllamaManageAgents(OllamaBaseTool):
                 timeout=self.ollama_config.timeout,
                 max_retries=self.ollama_config.max_retries,
             )
-            
+
             # Test the configuration
             test_result = await self._test_agent_config(agent_config)
-            
+
             return {
                 "status": "success",
                 "message": f"Agent '{agent_name}' configuration validated",
@@ -583,19 +608,19 @@ class OllamaManageAgents(OllamaBaseTool):
                 "status": "error",
                 "message": f"Failed to configure agent '{agent_name}': {str(e)}",
             }
-    
+
     async def _remove_agent(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Remove an agent configuration"""
         agent_name = arguments.get("agent_name")
         if not agent_name:
             raise ValueError("agent_name is required for remove action")
-        
+
         if agent_name == "primary":
             return {
                 "status": "error",
                 "message": "Cannot remove primary agent",
             }
-        
+
         if agent_name in self.ollama_config.agents:
             return {
                 "status": "info",
@@ -613,16 +638,18 @@ class OllamaManageAgents(OllamaBaseTool):
                 "status": "info",
                 "message": f"Agent '{agent_name}' not found in current configuration",
             }
-    
+
     async def _test_agent(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Test an agent's connectivity"""
         agent_name = arguments.get("agent_name", "primary")
-        
+
         try:
             health_status = await self.health_check(agent_name)
             if health_status:
                 # Try to get version info
-                response = await self.make_ollama_request("/api/version", agent_name=agent_name)
+                response = await self.make_ollama_request(
+                    "/api/version", agent_name=agent_name
+                )
                 return {
                     "status": "success",
                     "agent": agent_name,
@@ -643,7 +670,7 @@ class OllamaManageAgents(OllamaBaseTool):
                 "healthy": False,
                 "message": f"Test failed: {str(e)}",
             }
-    
+
     async def _configure_agent(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Get configuration instructions for setting up agents"""
         return {
@@ -679,14 +706,26 @@ services:
                     """,
                 },
                 "supported_roles": [
-                    "primary", "secondary", "tertiary", "quaternary",
-                    "quinary", "senary", "septenary", "octonary",
-                    "analyst", "reviewer", "validator", "executor",
-                    "monitor", "coordinator", "specialist", "assistant"
+                    "primary",
+                    "secondary",
+                    "tertiary",
+                    "quaternary",
+                    "quinary",
+                    "senary",
+                    "septenary",
+                    "octonary",
+                    "analyst",
+                    "reviewer",
+                    "validator",
+                    "executor",
+                    "monitor",
+                    "coordinator",
+                    "specialist",
+                    "assistant",
                 ],
             }
         }
-    
+
     async def _test_agent_config(self, agent_config) -> Dict[str, Any]:
         """Test a specific agent configuration"""
         try:
@@ -694,8 +733,10 @@ services:
             headers = {}
             if agent_config.api_key:
                 headers["Authorization"] = f"Bearer {agent_config.api_key}"
-            
-            async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+
+            async with aiohttp.ClientSession(
+                timeout=timeout, headers=headers
+            ) as session:
                 url = f"{agent_config.api_url.rstrip('/')}/api/version"
                 async with session.get(url) as response:
                     if response.status == 200:

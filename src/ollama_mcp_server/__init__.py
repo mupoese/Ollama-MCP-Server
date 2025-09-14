@@ -25,20 +25,25 @@ __license__ = "GPL-2.0"
 # Only import configuration by default to avoid dependency issues
 from .config.settings import DevOpsConfig
 
+
 def get_server():
     """Lazy import server to avoid dependency issues"""
     from .server.mcp_server import MCPDevOpsServer
+
     return MCPDevOpsServer
+
 
 def get_tool_registry():
     """Lazy import tool registry to avoid dependency issues"""
     from .tools.registry import ToolRegistry
+
     return ToolRegistry
+
 
 __all__ = [
     "DevOpsConfig",
     "get_server",
-    "get_tool_registry", 
+    "get_tool_registry",
     "__version__",
     "__author__",
     "__license__",
