@@ -228,7 +228,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.changelog.outputs.version }}
         name: "MCP Ollama Server ${{ steps.changelog.outputs.version }}"
