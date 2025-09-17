@@ -18,14 +18,14 @@ from ..config import get_config
 def setup_logging() -> None:
     """Configure structured logging for the application"""
     config = get_config()
-    
+
     # Configure standard library logging
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stdout,
         level=getattr(logging, config.log_level),
     )
-    
+
     # Configure processors based on environment
     processors = [
         structlog.stdlib.filter_by_level,
@@ -36,14 +36,16 @@ def setup_logging() -> None:
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
     ]
-    
+
     if config.is_development():
         # Rich formatting for development
-        processors.extend([
-            structlog.processors.UnicodeDecoder(),
-            structlog.dev.ConsoleRenderer(colors=True),
-        ])
-        
+        processors.extend(
+            [
+                structlog.processors.UnicodeDecoder(),
+                structlog.dev.ConsoleRenderer(colors=True),
+            ]
+        )
+
         # Use Rich handler for beautiful development logs
         handler = RichHandler(
             console=Console(stderr=True),
@@ -53,16 +55,18 @@ def setup_logging() -> None:
             markup=True,
             rich_tracebacks=True,
         )
-        
+
     else:
         # JSON formatting for production
-        processors.extend([
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
-        ])
-        
+        processors.extend(
+            [
+                structlog.processors.dict_tracebacks,
+                structlog.processors.JSONRenderer(),
+            ]
+        )
+
         handler = logging.StreamHandler()
-    
+
     # Configure structlog
     structlog.configure(
         processors=processors,
@@ -70,7 +74,7 @@ def setup_logging() -> None:
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
-    
+
     # Set up the root logger
     root_logger = logging.getLogger()
     root_logger.handlers.clear()
@@ -84,10 +88,10 @@ def get_logger(name: Optional[str] = None) -> structlog.BoundLogger:
 
 class AuditLogger:
     """Audit logger for security-sensitive operations"""
-    
+
     def __init__(self):
         self.logger = get_logger("audit")
-    
+
     def log_tool_execution(
         self,
         tool_name: str,
@@ -106,7 +110,7 @@ class AuditLogger:
             error=error,
             event_type="tool_execution",
         )
-    
+
     def log_security_event(
         self,
         event_type: str,
@@ -121,7 +125,7 @@ class AuditLogger:
             severity=severity,
             metadata=metadata or {},
         ).info(description)
-    
+
     def log_authentication(
         self,
         user_id: Optional[str],
@@ -138,7 +142,7 @@ class AuditLogger:
             ip_address=ip_address,
             event_type="authentication",
         )
-    
+
     def log_authorization(
         self,
         user_id: Optional[str],
@@ -165,10 +169,10 @@ audit_logger = AuditLogger()
 
 class PerformanceLogger:
     """Performance logging for tool execution metrics"""
-    
+
     def __init__(self):
         self.logger = get_logger("performance")
-    
+
     def log_tool_performance(
         self,
         tool_name: str,
@@ -187,7 +191,7 @@ class PerformanceLogger:
             output_size=output_size,
             event_type="performance",
         )
-    
+
     def log_cache_metrics(
         self,
         cache_key: str,

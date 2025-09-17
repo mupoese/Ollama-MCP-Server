@@ -6,30 +6,29 @@ management, workflow automation, and development operations.
 """
 
 import aiohttp
-import asyncio
 import base64
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 from urllib.parse import urlencode
-import structlog
 
 from .base_tool import BaseTool
 
 
 class GitHubBaseTool(BaseTool):
     """Base class for GitHub tools with common functionality"""
-    
+
     def __init__(self):
         super().__init__()
         self.github_token = self._get_github_token()
         self.base_url = "https://api.github.com"
         self.session: Optional[aiohttp.ClientSession] = None
-    
+
     def _get_github_token(self) -> Optional[str]:
         """Get GitHub token from environment or config"""
         import os
+
         return os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
-    
+
     async def get_session(self) -> aiohttp.ClientSession:
         """Get or create HTTP session for GitHub API calls"""
         if self.session is None or self.session.closed:
@@ -39,14 +38,11 @@ class GitHubBaseTool(BaseTool):
             }
             if self.github_token:
                 headers["Authorization"] = f"token {self.github_token}"
-            
+
             timeout = aiohttp.ClientTimeout(total=30)
-            self.session = aiohttp.ClientSession(
-                timeout=timeout,
-                headers=headers
-            )
+            self.session = aiohttp.ClientSession(timeout=timeout, headers=headers)
         return self.session
-    
+
     async def make_github_request(
         self,
         endpoint: str,
@@ -56,22 +52,22 @@ class GitHubBaseTool(BaseTool):
     ) -> Dict[str, Any]:
         """
         Make a request to the GitHub API
-        
+
         Args:
             endpoint: API endpoint (e.g., "/repos/owner/repo")
             method: HTTP method
             data: Request data for POST/PUT requests
             params: Query parameters
-            
+
         Returns:
             API response data
         """
         session = await self.get_session()
         url = f"{self.base_url}{endpoint}"
-        
+
         if params:
             url += "?" + urlencode(params)
-        
+
         try:
             async with session.request(method, url, json=data) as response:
                 if response.status in [200, 201, 202]:
@@ -85,13 +81,12 @@ class GitHubBaseTool(BaseTool):
                         error_data = json.loads(error_text)
                     except:
                         pass
-                    
-                    raise Exception(
-                        f"GitHub API error {response.status}: {error_data.get('message', error_text)}"
-                    )
+
+                    error_msg = error_data.get("message", error_text)
+                    raise Exception(f"GitHub API error {response.status}: {error_msg}")
         except aiohttp.ClientError as e:
             raise Exception(f"GitHub API request failed: {str(e)}")
-    
+
     async def cleanup(self):
         """Clean up HTTP session"""
         if self.session and not self.session.closed:
@@ -100,15 +95,15 @@ class GitHubBaseTool(BaseTool):
 
 class GitHubGetFileContents(GitHubBaseTool):
     """Get the contents of a file or directory from a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_get_file_contents"
-    
+
     @property
     def description(self) -> str:
         return "Get the contents of a file or directory from a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -135,14 +130,14 @@ class GitHubGetFileContents(GitHubBaseTool):
             "required": ["owner", "repo"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the get file contents command"""
         owner = arguments["owner"]
         repo = arguments["repo"]
         path = arguments.get("path", "")
         ref = arguments.get("ref")
-        
+
         self.logger.info(
             "Getting GitHub file contents",
             owner=owner,
@@ -150,14 +145,14 @@ class GitHubGetFileContents(GitHubBaseTool):
             path=path,
             ref=ref,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/contents/{path}"
         params = {}
         if ref:
             params["ref"] = ref
-        
+
         response = await self.make_github_request(endpoint, params=params)
-        
+
         # Handle directory vs file response
         if isinstance(response, list):
             # Directory listing
@@ -183,7 +178,7 @@ class GitHubGetFileContents(GitHubBaseTool):
                     content = base64.b64decode(response["content"]).decode("utf-8")
                 except:
                     content = "[Binary file content not displayed]"
-            
+
             return {
                 "type": "file",
                 "name": response["name"],
@@ -198,15 +193,15 @@ class GitHubGetFileContents(GitHubBaseTool):
 
 class GitHubGetCommit(GitHubBaseTool):
     """Get details for a commit from a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_get_commit"
-    
+
     @property
     def description(self) -> str:
         return "Get details for a commit from a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -233,24 +228,24 @@ class GitHubGetCommit(GitHubBaseTool):
             "required": ["owner", "repo", "sha"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the get commit command"""
         owner = arguments["owner"]
         repo = arguments["repo"]
         sha = arguments["sha"]
         include_diff = arguments.get("include_diff", True)
-        
+
         self.logger.info(
             "Getting GitHub commit details",
             owner=owner,
             repo=repo,
             sha=sha,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/commits/{sha}"
         response = await self.make_github_request(endpoint)
-        
+
         commit_data = {
             "sha": response["sha"],
             "message": response["commit"]["message"],
@@ -267,7 +262,7 @@ class GitHubGetCommit(GitHubBaseTool):
             "url": response["html_url"],
             "stats": response.get("stats", {}),
         }
-        
+
         if include_diff and "files" in response:
             commit_data["files"] = [
                 {
@@ -280,21 +275,21 @@ class GitHubGetCommit(GitHubBaseTool):
                 }
                 for file_data in response["files"]
             ]
-        
+
         return commit_data
 
 
 class GitHubListCommits(GitHubBaseTool):
     """Get list of commits for a branch in a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_list_commits"
-    
+
     @property
     def description(self) -> str:
         return "Get list of commits for a branch in a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -333,7 +328,7 @@ class GitHubListCommits(GitHubBaseTool):
             "required": ["owner", "repo"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the list commits command"""
         owner = arguments["owner"]
@@ -342,7 +337,7 @@ class GitHubListCommits(GitHubBaseTool):
         author = arguments.get("author")
         per_page = arguments.get("per_page", 30)
         page = arguments.get("page", 1)
-        
+
         self.logger.info(
             "Listing GitHub commits",
             owner=owner,
@@ -350,7 +345,7 @@ class GitHubListCommits(GitHubBaseTool):
             sha=sha,
             author=author,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/commits"
         params = {
             "per_page": per_page,
@@ -360,9 +355,9 @@ class GitHubListCommits(GitHubBaseTool):
             params["sha"] = sha
         if author:
             params["author"] = author
-        
+
         response = await self.make_github_request(endpoint, params=params)
-        
+
         commits = [
             {
                 "sha": commit["sha"],
@@ -381,7 +376,7 @@ class GitHubListCommits(GitHubBaseTool):
             }
             for commit in response
         ]
-        
+
         return {
             "commits": commits,
             "count": len(commits),
@@ -392,15 +387,15 @@ class GitHubListCommits(GitHubBaseTool):
 
 class GitHubListBranches(GitHubBaseTool):
     """List branches in a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_list_branches"
-    
+
     @property
     def description(self) -> str:
         return "List branches in a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -431,28 +426,28 @@ class GitHubListBranches(GitHubBaseTool):
             "required": ["owner", "repo"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the list branches command"""
         owner = arguments["owner"]
         repo = arguments["repo"]
         per_page = arguments.get("per_page", 30)
         page = arguments.get("page", 1)
-        
+
         self.logger.info(
             "Listing GitHub branches",
             owner=owner,
             repo=repo,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/branches"
         params = {
             "per_page": per_page,
             "page": page,
         }
-        
+
         response = await self.make_github_request(endpoint, params=params)
-        
+
         branches = [
             {
                 "name": branch["name"],
@@ -462,7 +457,7 @@ class GitHubListBranches(GitHubBaseTool):
             }
             for branch in response
         ]
-        
+
         return {
             "branches": branches,
             "count": len(branches),
@@ -473,15 +468,15 @@ class GitHubListBranches(GitHubBaseTool):
 
 class GitHubSearchRepositories(GitHubBaseTool):
     """Search for GitHub repositories"""
-    
+
     @property
     def name(self) -> str:
         return "github_search_repositories"
-    
+
     @property
     def description(self) -> str:
         return "Search for GitHub repositories by name, description, topics, or other criteria"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -489,7 +484,9 @@ class GitHubSearchRepositories(GitHubBaseTool):
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Search query (e.g., 'machine learning language:python stars:>1000')",
+                    "description": (
+                        "Search query (e.g., 'machine learning language:python stars:>1000')"
+                    ),
                 },
                 "per_page": {
                     "type": "integer",
@@ -518,7 +515,7 @@ class GitHubSearchRepositories(GitHubBaseTool):
             "required": ["query"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the search repositories command"""
         query = arguments["query"]
@@ -526,12 +523,12 @@ class GitHubSearchRepositories(GitHubBaseTool):
         page = arguments.get("page", 1)
         sort = arguments.get("sort")
         order = arguments.get("order")
-        
+
         self.logger.info(
             "Searching GitHub repositories",
             query=query,
         )
-        
+
         endpoint = "/search/repositories"
         params = {
             "q": query,
@@ -542,9 +539,9 @@ class GitHubSearchRepositories(GitHubBaseTool):
             params["sort"] = sort
         if order:
             params["order"] = order
-        
+
         response = await self.make_github_request(endpoint, params=params)
-        
+
         repositories = [
             {
                 "name": repo["name"],
@@ -559,7 +556,7 @@ class GitHubSearchRepositories(GitHubBaseTool):
             }
             for repo in response["items"]
         ]
-        
+
         return {
             "repositories": repositories,
             "total_count": response["total_count"],
@@ -570,15 +567,15 @@ class GitHubSearchRepositories(GitHubBaseTool):
 
 class GitHubGetIssue(GitHubBaseTool):
     """Get details of a specific issue in a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_get_issue"
-    
+
     @property
     def description(self) -> str:
         return "Get details of a specific issue in a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -600,23 +597,23 @@ class GitHubGetIssue(GitHubBaseTool):
             "required": ["owner", "repo", "issue_number"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the get issue command"""
         owner = arguments["owner"]
         repo = arguments["repo"]
         issue_number = arguments["issue_number"]
-        
+
         self.logger.info(
             "Getting GitHub issue",
             owner=owner,
             repo=repo,
             issue_number=issue_number,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/issues/{issue_number}"
         response = await self.make_github_request(endpoint)
-        
+
         return {
             "number": response["number"],
             "title": response["title"],
@@ -635,15 +632,15 @@ class GitHubGetIssue(GitHubBaseTool):
 
 class GitHubListPullRequests(GitHubBaseTool):
     """List pull requests in a GitHub repository"""
-    
+
     @property
     def name(self) -> str:
         return "github_list_pull_requests"
-    
+
     @property
     def description(self) -> str:
         return "List pull requests in a GitHub repository"
-    
+
     @property
     def input_schema(self) -> Dict[str, Any]:
         return {
@@ -692,7 +689,7 @@ class GitHubListPullRequests(GitHubBaseTool):
             "required": ["owner", "repo"],
             "additionalProperties": False,
         }
-    
+
     async def _execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the list pull requests command"""
         owner = arguments["owner"]
@@ -702,14 +699,14 @@ class GitHubListPullRequests(GitHubBaseTool):
         direction = arguments.get("direction", "desc")
         per_page = arguments.get("per_page", 30)
         page = arguments.get("page", 1)
-        
+
         self.logger.info(
             "Listing GitHub pull requests",
             owner=owner,
             repo=repo,
             state=state,
         )
-        
+
         endpoint = f"/repos/{owner}/{repo}/pulls"
         params = {
             "state": state,
@@ -718,9 +715,9 @@ class GitHubListPullRequests(GitHubBaseTool):
             "per_page": per_page,
             "page": page,
         }
-        
+
         response = await self.make_github_request(endpoint, params=params)
-        
+
         pull_requests = [
             {
                 "number": pr["number"],
@@ -743,7 +740,7 @@ class GitHubListPullRequests(GitHubBaseTool):
             }
             for pr in response
         ]
-        
+
         return {
             "pull_requests": pull_requests,
             "count": len(pull_requests),
